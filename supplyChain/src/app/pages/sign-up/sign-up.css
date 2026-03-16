@@ -4,18 +4,40 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
+    color:	#1B0B23;
 }
-
-form {
+ form {
     width: 300px;
-    background-color: rgb(215, 143, 238);
     padding: 20px;
     border-radius: 5px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #1B0B23;
+    box-shadow: #1B0B23   0 0 4px;
+}
+
+.form-control{
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
 }
 
 .btn {
     width: 100%;
     margin-top: 10px;
     color: white;
+    background-color:#985BB9;
+    border-color:#985BB9;
     
 }   
+
+.btn:hover {
+    background-color: #553068;
+    border-color:#553068;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
