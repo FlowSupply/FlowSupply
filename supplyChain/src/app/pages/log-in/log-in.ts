@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink } from "../../../../node_modules/@angular/router/types/_router_module-chunk";
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-log-in',
-  imports: [],
+  imports: [ CommonModule],
   templateUrl: './log-in.html',
   styleUrl: './log-in.css',
 })
-export class LogIn {}
+export class LogIn {
+  showPassword = false;
+  errorMessage='';
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+}
