@@ -1,88 +1,41 @@
 .layout {
-  display: flex;
-  height: 100vh;
+    display: flex;
+    height: 100vh;
 }
 
 .sidebar {
-  max-width: 220px;
-  width: 100%;
-  background: linear-gradient(rgb(51, 25, 77), rgb(41, 20, 52));
-  color: white;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+    max-width: 220px;
+    width: 100%;
+    background: linear-gradient(rgb(51, 25, 77), rgb(41, 20, 52));
+    color: white;
+    padding: 20px 20px 0 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box; 
 }
 
 .content {
-  flex: 1;
-  padding: 20px;
+    flex: 1;
+    padding: 20px;
 }
 
+
 .header-row {
-    top: 0;
     border-bottom: #985BB9 1px solid;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 5px;
+    padding: 10px 5px;
     color: white;   
 }
 
 .menu {
-    margin-top: 10%;
+    margin-top: 20px; 
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    color: white;
-}
-
-.footer-row {
-    margin-top: auto;
-    border-top: #985BB9 1px solid;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content:space-between;
-    padding: 5px;
-    color: white;
-    flex-wrap: nowrap;
-}
-
-.footer-row .avatar {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.footer-row svg {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
-}
-
-.userInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 0px; 
-    justify-content: center;
-    line-height: 1;
-}
-
-.userInfo p {
-    font-size: 10px; 
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.userInfo .username {
-    font-weight: bold;
-    font-size: 11px;
+    gap: 8px;
 }
 
 .nav-link-custom {
@@ -92,11 +45,10 @@
     padding: 10px 12px;
     border-radius: 10px;
     text-decoration: none;
-    color: inherit;
+    color: #bbb;
     transition: 0.2s ease;
     font-size: 14px;
     cursor: pointer;
-    color: #bbb;
 }
 
 .nav-link-custom:hover {
@@ -107,4 +59,57 @@
 .nav-link-custom.active {
     background-color: #421A52;
     color: #d147d1;
+}
+
+.footer-row {
+    margin-top: auto;
+    border-top: #985BB9 1px solid;
+    width: 100%;
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+    padding: 12px 0; 
+    box-sizing: border-box;
+    padding-top: 12px;   
+    padding-bottom: 12px;
+}
+
+.footer-row .avatar, 
+.footer-row svg {
+    width: 22px;       
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 4px; 
+}
+
+.footer-row svg {
+    cursor: pointer;
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;      
+    margin: 2px 10px 0 10px;  
+    overflow: hidden;  
+    line-height: 1.1;  
+}
+
+.userInfo p {
+    margin: 0;         
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.userInfo .username {
+    font-weight: bold;
+    font-size: 13px;   
+    color: white;
+}
+
+.userInfo .email {
+    font-size: 7px;
+    opacity: 0.6;
 }
