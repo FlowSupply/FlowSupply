@@ -28,11 +28,11 @@ export class SignUp {
         const password = document.querySelector('input[name="password"]') as HTMLInputElement;
         const confirmPassword = document.querySelector('input[name="confirm-password"]') as HTMLInputElement;
         
-        if(password.value != null && confirmPassword.value != null){
+        if(password.value != "" && confirmPassword.value != ""){
             if(password.value != confirmPassword.value){
                 this.errorMessage = 'Passwords do not match';
             } else {
-                this.router.navigate(['/login']);
+                this.router.navigate(['/dashboard']);
             }
         }   
     }
