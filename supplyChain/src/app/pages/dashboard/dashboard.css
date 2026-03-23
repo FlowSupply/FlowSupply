@@ -1,0 +1,42 @@
+.intro h1{
+    color: #212020;
+    margin-bottom: 10px;
+    font-weight: bolder;
+}
+
+.intro h6{
+    color: #212020;
+    margin-bottom: 20px;
+    font-weight: normal;
+}
+
+.cards {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 👈 2 columns */
+    gap: 20px; /* spacing between cards */
+    
+}
+
+.card:hover, .card2:hover, .card3:hover, .card4:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
+}
+
