@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 })
 export class Sidenavbar {
   activeLink: string = '';
+  isSidebarOpen = false;         
+  isCollapsed = false; 
 
   setActive(link: string) {
     this.activeLink = link;
@@ -19,5 +21,13 @@ export class Sidenavbar {
 
   isActive(url: string) {
     return this.router.url === url;
+  }           
+
+toggleSidebar() {
+  this.isSidebarOpen = !this.isSidebarOpen;
+}
+
+toggleCollapse() {
+  this.isCollapsed = !this.isCollapsed;
   }
 }
