@@ -1,40 +1,62 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sign-up',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './sign-up.html',
   styleUrl: './sign-up.css',
 })
 export class SignUp {
-    showPassword = false;
-    showConfirmPassword = false
-    errorMessage : string = '';
+  showPassword = false;
+  showConfirmPassword = false;
+  errorMessage = '';
 
-    constructor(private router: Router) {}
+  firstName = '';
+  lastName = '';
+  username = '';
+  email = '';
+  password = '';
+  confirmPassword = '';
 
-    togglePassword() {
-        this.showPassword = !this.showPassword;
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPassword() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  onSubmit() {
+    this.errorMessage = '';
+
+    if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
+      this.errorMessage = 'Please fill in all required fields.';
+      return;
     }
 
-    toggleConfirmPassword() {
-        this.showConfirmPassword = !this.showConfirmPassword;
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
     }
 
-    checkPasswordsMatch(){
-        const password = document.querySelector('input[name="password"]') as HTMLInputElement;
-        const confirmPassword = document.querySelector('input[name="confirm-password"]') as HTMLInputElement;
-        
-        if(password.value != "" && confirmPassword.value != ""){
-            if(password.value != confirmPassword.value){
-                this.errorMessage = 'Passwords do not match';
-            } else {
-                this.router.navigate(['/dashboard']);
-            }
-        }   
-    }
+    const fullName = `${this.firstName} ${this.lastName}`.trim();
 
+    this.authService.register(fullName, this.email, this.password).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.errorMessage = err.error || 'Sign up failed.';
+      }
+    });
+  }
 }
