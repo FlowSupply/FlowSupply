@@ -1,49 +1,84 @@
 {
+<<<<<<< Updated upstream
   "hash": "abe63057",
   "configHash": "5a583c17",
   "lockfileHash": "447df029",
   "browserHash": "ebc9d03b",
+=======
+  "hash": "792ea11f",
+  "configHash": "ac6035e5",
+  "lockfileHash": "7ed8df2a",
+  "browserHash": "2cf10b61",
+>>>>>>> Stashed changes
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
+<<<<<<< Updated upstream
       "fileHash": "ebeb5d56",
+=======
+      "fileHash": "1730d99b",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/common/http": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
+<<<<<<< Updated upstream
       "fileHash": "1898b3c0",
+=======
+      "fileHash": "63ccb369",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
+<<<<<<< Updated upstream
       "fileHash": "d6e3780b",
+=======
+      "fileHash": "61369fc6",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
+<<<<<<< Updated upstream
       "fileHash": "90e3ce11",
+=======
+      "fileHash": "4bb9b5ba",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
+<<<<<<< Updated upstream
       "fileHash": "706966cc",
+=======
+      "fileHash": "0ce5589c",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
+<<<<<<< Updated upstream
       "fileHash": "5c74da0f",
+=======
+      "fileHash": "a365143c",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
+<<<<<<< Updated upstream
       "fileHash": "cf5e4f1b",
+=======
+      "fileHash": "0fb27016",
+>>>>>>> Stashed changes
       "needsInterop": false
     }
   },
