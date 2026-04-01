@@ -48,13 +48,38 @@
         </div>
     </div>
 
-</div>
 
-<div class="statistics">
-    <h2>Statistics</h2>
-    <div class="chart">
-        <div class="section">
-                <div class="bar" style="height: 80%;"></div>
-        </div>
+      <!-- Chart card -->
+  <div class="card chart-card">
+    <div class="card-text">
+      <h6>Monthly Orders</h6>
     </div>
+
+    <div class="chart-container">
+      <!-- Y-axis scale -->
+      <div class="y-axis">
+        <div *ngFor="let step of scaleSteps" class="y-label">
+          {{ step }}
+        </div>
+      </div>
+
+      <!-- Chart bars -->
+      <div class="chart">
+        <div class="section" *ngFor="let month of months; let i = index">
+            <div class="bar"
+                 [style.height.%]="(chartValues[i] / scaleSteps[scaleSteps.length - 1]) * 100">
+            </div>
+          <div class="bar-wrapper">
+
+            <div class="info">
+              <span>{{ month }}</span>
+              <span>Orders: {{ chartValues[i] }}</span>
+            </div>
+          </div>
+
+          <span class="label">{{ month }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
