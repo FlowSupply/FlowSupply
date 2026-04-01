@@ -5,6 +5,8 @@ import { LogIn } from './pages/log-in/log-in';
 import { Sidenavbar } from './layouts/sidenavbar/sidenavbar';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Suppliers } from './pages/suppliers/suppliers';
+import { Inventory } from './pages/inventory/inventory';
+import { Requests } from './pages/requests/requests';
 
 export const routes: Routes = [
     { path: 'signup', component: SignUp },
@@ -13,7 +15,9 @@ export const routes: Routes = [
         children: [
             { path: '', redirectTo: 'dashboard',  pathMatch: 'full'},
             { path: 'dashboard', component: Dashboard},
-            { path: 'suppliers', component: Suppliers}
+            { path: 'suppliers', component: Suppliers},
+            { path: 'inventory', component: Inventory},
+            { path: 'purchase-requests', component: Requests},
     ]}
 ];
 

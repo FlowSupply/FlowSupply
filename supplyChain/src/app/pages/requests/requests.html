@@ -1,0 +1,92 @@
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeCreateRequestModal()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">New purchase request</h2>
+        <p class="modal-subtitle">Fill in the details for the request</p>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <div class="select-wrapper">
+            <select class="form-select" #productSelect>
+              <option value="" disabled selected>Select a product</option>
+              <option>djdkkd</option>
+              <option>hehehe</option>
+              <option>hahha</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-input" type="number" placeholder="Enter quantity" #quantityInput min="1" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reason</label>
+        <textarea class="form-textarea" placeholder="Describe why this request is needed..." #reasonInput rows="4"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-submit" (click)="submitRequest(productSelect.value, quantityInput.value, reasonInput.value)">Submit Request</button>
+      <button class="btn-cancel" (click)="closeCreateRequestModal()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="intro">
+    <div class="title">
+      <h1 style="font-size: 2em;">Purchase requests</h1>
+      <p>Create and check purchase requests</p>
+    </div>
+    <button class="btn-add" (click)="openCreateRequestModal()">+ New Request</button>
+  </div>
+
+  <div class="container-fluid suppliersTable">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Reason</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products">
+          <td>{{ product.productId }}</td>
+          <td>{{ product.productName }}</td>
+          <td style="font-weight: bold; color: black;">{{ product.productQuantity }}</td>
+          <td><span style="color: #6e6e6e;">{{ product.reason }}</span></td>
+          <td style="color: #6e6e6e;">{{ product.date }}</td>
+          <td style="text-align:center;">
+            <span [ngStyle]="{
+              'background-color': statusColors[product.productStatus],
+              'color': 'white',
+              'border-radius': '20px',
+              'padding': '4px 12px',
+              'display': 'inline-flex',
+              'width': '70%',
+              'height': '50%',
+              'align-items': 'center',
+              'justify-content': 'center'
+            }">{{ product.productStatus }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
