@@ -7,6 +7,8 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Suppliers } from './pages/suppliers/suppliers';
 import { Inventory } from './pages/inventory/inventory';
 import { Requests } from './pages/requests/requests';
+import { Approvals } from './pages/approvals/approvals';
+import { Orders } from './pages/orders/orders';
 
 export const routes: Routes = [
     { path: 'signup', component: SignUp },
@@ -18,6 +20,8 @@ export const routes: Routes = [
             { path: 'suppliers', component: Suppliers},
             { path: 'inventory', component: Inventory},
             { path: 'purchase-requests', component: Requests},
+            { path: 'approvals', component: Approvals},
+            { path: 'orders', component: Orders}
     ]}
 ];
 
