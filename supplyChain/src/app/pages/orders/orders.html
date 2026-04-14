@@ -1,0 +1,67 @@
+<div class="page">
+    <div class="intro">
+        <div class="title">
+            <h1>Orders</h1>
+            <p>Review and manage your orders</p>
+        </div>
+    </div>
+    
+    <div class="conatiner-fluid searchFilter mt-4 mb-3">
+      <input class="form-control" type="text" placeholder="Search products..." aria-label="Search">
+      <button class="filterBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
+              <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
+          </svg> Filters
+      </button>
+
+    </div>
+
+    <div class="orders-list">
+        <div class="order-card" *ngFor="let order of orders">
+
+            <!-- LEFT -->
+            <div class="order-left">
+            <div class="order-header">
+                <span class="order-id">{{ order.id }}</span>
+                <span 
+                class="status"
+                [ngClass]="order.status">
+                {{ order.statusLabel }}
+                </span>
+            </div>
+
+            <h3>{{ order.title }}</h3>
+
+            <div class="meta">
+                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin w-3.5 h-3.5"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ order.supplier }}</span>
+                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package w-3.5 h-3.5"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path><path d="M12 22V12"></path><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"></path><path d="m7.5 4.27 9 5.15"></path></svg> {{ order.quantity }} бр.</span>
+                <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> {{ order.date }}</span>
+            </div>
+            </div>
+
+            <!-- RIGHT (TIMELINE) -->
+            <div class="order-right">
+            <h4>Timeline</h4>
+
+            <div class="timeline">
+                <div 
+                class="step" 
+                *ngFor="let step of order.steps; let i = index"
+                [class.done]="step.done">
+
+                <div class="dot"></div>
+
+                <div class="step-content">
+                    <span class="label">{{ step.label }}</span>
+                    <span class="date">
+                    {{ step.date ? step.date : '—' }}
+                    </span>
+                </div>
+
+                </div>
+            </div>
+            </div>
+
+        </div>
+    </div>
+</div>

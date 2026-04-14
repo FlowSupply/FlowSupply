@@ -12,12 +12,13 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    position: fixed;
     box-sizing: border-box; 
 }
 
 .content {
+    margin-left: 220px; 
     flex: 1;
-    margin: 0;
     transition: margin 0.3s ease;
 }
 
@@ -166,7 +167,6 @@
 }
 
 .sidebar.collapsed {
-    max-width: 70px;
     width: 70px;
     padding-left: 10px;
     padding-right: 10px;
@@ -190,7 +190,7 @@
     gap: 10px;
 }
 
-.sidebar.collapsed + .content {
+.sidebar.collapsed ~ .content {
     margin-left: 70px;
 }
 

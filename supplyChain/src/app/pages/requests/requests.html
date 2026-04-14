@@ -47,11 +47,41 @@
 <div class="page">
   <div class="intro">
     <div class="title">
-      <h1 style="font-size: 2em;">Purchase requests</h1>
+      <h1>Purchase requests</h1>
       <p>Create and check purchase requests</p>
     </div>
     <button class="btn-add" (click)="openCreateRequestModal()">+ New Request</button>
   </div>
+
+<div class="stats-row">
+  <div class="stat-card stat-purple">
+    <div class="stat-icon purple-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list w-4 h-4"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg></div>
+    <div class="stat-info">
+      <span class="stat-label">TOTAL REQUESTS</span>
+      <span class="stat-value">{{ products.length }}</span>
+    </div>
+  </div>
+
+  <div class="stat-card stat-yellow">
+    <div class="stat-icon yellow-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+    <div class="stat-info">
+      <span class="stat-label">PENDING</span>
+      <span class="stat-value">
+        {{ products.filter(p => p.productStatus === 'Pending').length }}
+      </span>
+    </div>
+  </div>
+
+  <div class="stat-card stat-green">
+    <div class="stat-icon green-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart w-4 h-4"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg></div>
+    <div class="stat-info">
+      <span class="stat-label">APPROVED</span>
+      <span class="stat-value">
+        {{ products.filter(p => p.productStatus === 'Approved').length }}
+      </span>
+    </div>
+  </div>
+</div>
 
   <div class="container-fluid suppliersTable">
     <table class="table">
@@ -72,18 +102,15 @@
           <td style="font-weight: bold; color: black;">{{ product.productQuantity }}</td>
           <td><span style="color: #6e6e6e;">{{ product.reason }}</span></td>
           <td style="color: #6e6e6e;">{{ product.date }}</td>
-          <td style="text-align:center;">
-            <span [ngStyle]="{
-              'background-color': statusColors[product.productStatus],
-              'color': 'white',
-              'border-radius': '20px',
-              'padding': '4px 12px',
-              'display': 'inline-flex',
-              'width': '70%',
-              'height': '50%',
-              'align-items': 'center',
-              'justify-content': 'center'
-            }">{{ product.productStatus }}</span>
+          <td>
+            <span class="status-badge"
+                [ngClass]="{
+                  'status-pending': product.productStatus === 'Pending',
+                  'status-approved': product.productStatus === 'Approved',
+                  'status-rejected': product.productStatus === 'Rejected'
+                }">
+              {{ product.productStatus }}
+            </span>
           </td>
         </tr>
       </tbody>
