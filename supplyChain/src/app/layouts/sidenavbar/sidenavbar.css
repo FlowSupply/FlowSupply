@@ -4,7 +4,7 @@
 }
 
 .sidebar {
-    max-width: 220px;
+    max-width: 190px;
     width: 100%;
     background: linear-gradient(rgb(51, 25, 77), rgb(41, 20, 52));
     color: white;
@@ -17,7 +17,7 @@
 }
 
 .content {
-    margin-left: 220px; 
+    margin-left: 190px; 
     flex: 1;
     transition: margin 0.3s ease;
 }
@@ -37,11 +37,11 @@
     display: flex;
     align-items: center;
     flex: 1;
+    width: 100%;
 }
 
 .logo-img {
     width: 100%;
-    display: block;
     margin: 0;
 }
 
@@ -53,6 +53,8 @@
     display: flex;
     align-items: center;
     transition: 0.2s;
+    width: 20px;
+    height: 40px;
 }
 
 .collapse-btn:hover {
@@ -126,16 +128,11 @@
     height: 7%;
 }
 
-.footer-row .avatar, 
-.footer-row svg {
+.footer-row .avatar {
     width: 22px;       
     height: 22px;
     flex-shrink: 0;
     border-radius: 4px; 
-}
-
-.footer-row svg {
-    cursor: pointer;
 }
 
 .userInfo {
@@ -196,12 +193,12 @@
 
 @media (max-width: 768px) {
     .sidebar {
-        top: 60px;              
-        height: calc(100vh - 60px);
+        top: 60px;
+        height: auto;
+        bottom: 0;              
         position: fixed;
         top: 0;
         left: 0;
-        height: 100vh;
         z-index: 999;
 
         transform: translateX(-100%);
@@ -222,6 +219,8 @@
 
     .content {
         margin-top: 60px;
+        margin-left: 0px;
+        overflow-x:hidden;
     }
 }
 
@@ -269,9 +268,9 @@
 
     display: flex;
     align-items: center;
-    justify-content: start;
+    justify-content: flex-start;
 
-    z-index: 1000;
+    z-index: 2000; /* higher than sidebar */
 }
 
 .menu-toggle {
@@ -284,14 +283,15 @@
 /* Brand (logo + text) */
 .mobile-brand {
     display: flex;
-    align-items: center;
-    width: 37%;
-    height: auto;
+    align-items: center; 
+    height: 100%; 
 }
 
 .mobile-logo {
-    width: 100%;
-    height: 100%;
+    width: 125%;
+    height: 125%;
+    display: block;
+    margin: 0;
 }
 
 /* hide button on desktop */

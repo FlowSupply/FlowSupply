@@ -71,20 +71,22 @@
 
   <!-- Table -->
   <div class="suppliersTable">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>SUPPLIER</th>
-          <th>CATEGORY</th>
-          <th>RATING</th>
-          <th>SUPPLIES</th>
-          <th>AVG. DELAY</th>
-          <th>STATUS</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let supplier of suppliers">
+    <p class="table-scroll-hint">← swipe to see more →</p>
+    <div class="table-scroll-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>SUPPLIER</th>
+            <th>CATEGORY</th>
+            <th>RATING</th>
+            <th>SUPPLIES</th>
+            <th>AVG. DELAY</th>
+            <th>STATUS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let supplier of suppliers">
           <!-- Avatar + Name + ID -->
           <td class="supplier-cell d-flex align-items-center justify-content-start gap-3">
             <div class="supplier-avatar">{{ supplier.supplierName[0] }}</div>
@@ -146,6 +148,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
   </div>
 
   <!-- Details Overlay -->
