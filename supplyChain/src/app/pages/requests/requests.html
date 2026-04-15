@@ -84,18 +84,20 @@
 </div>
 
   <div class="container-fluid suppliersTable">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>Reason</th>
-          <th>Date</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
+    <p class="table-scroll-hint">← swipe to see more →</p>
+    <div class="table-scroll-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Reason</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
         <tr *ngFor="let product of products">
           <td>{{ product.productId }}</td>
           <td>{{ product.productName }}</td>
@@ -114,6 +116,7 @@
           </td>
         </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 </div>
