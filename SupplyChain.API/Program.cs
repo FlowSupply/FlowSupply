@@ -43,13 +43,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("SupplyChainDb"));
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHostedService<InventoryConsumptionService>();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
         policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins("http://localhost:4200", "http://127.0.0.1:4200")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -77,6 +78,12 @@ builder.Services
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.EnsureCreated();
+}
 
 if (app.Environment.IsDevelopment())
 {

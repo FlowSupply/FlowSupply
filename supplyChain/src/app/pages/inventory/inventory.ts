@@ -1,6 +1,36 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+
+type ProductStatus = 'Out of Stock' | 'Critical' | 'Very Low' | 'Low' | 'Good' | 'Optimal' | 'Overstock';
+
+interface InventoryProduct {
+  productId: number;
+  productName: string;
+  productSCU: string;
+  productCategory: string;
+  productAvailability: number;
+  productMinimum: number;
+  productStatus: ProductStatus;
+  supplierContactPerson: string;
+  supplierContactEmail: string;
+  supplierContactPhone: string;
+  supplierAddress: string;
+  lastConsumption?: number;
+}
+
+interface ApiInventoryItem {
+  id: number;
+  name: string;
+  sku: string;
+  category: string;
+  availableQuantity: number;
+  minimumQuantity: number;
+  status: ProductStatus;
+  supplierName: string;
+  lastConsumedQuantity: number;
+}
 
 @Component({
   selector: 'app-inventory',
@@ -8,17 +38,27 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './inventory.html',
   styleUrl: './inventory.css',
 })
-export class Inventory {
-  products = [
-    {productId: 1, productName: 'Supplier 1', productSCU: '4.5', productCategory: 'Category 1', productAvailability: 2, productMinimum: 20, productStatus: 'OK', supplierContactPerson: 'John Doe', supplierContactEmail: 'jD0eI@example.com', supplierContactPhone: '123-456-7890', supplierAddress: '123 Main St, City, Country'},
-    {productId: 2, productName: 'Supplier 2', productSCU: '4.5', productCategory: 'Category 2', productAvailability: 60, productMinimum: 50, productStatus: 'Critical', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
-    {productId: 3, productName: 'Supplier 2', productSCU: '4.5', productCategory: 'Category 2', productAvailability: 45, productMinimum: 50, productStatus: 'Critical', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
-    {productId: 4, productName: 'Supplier 2', productSCU: '4.5', productCategory: 'Category 2', productAvailability: 40, productMinimum: 50, productStatus: 'Critical', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
-    {productId: 5, productName: 'Supplier 2', productSCU: '4.5', productCategory: 'Category 2', productAvailability: 25, productMinimum: 50, productStatus: 'Critical', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
-    {productId: 6, productName: 'Supplier 2', productSCU: '4.5', productCategory: 'Category 2', productAvailability: 15, productMinimum: 50, productStatus: 'Critical', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'}
+export class Inventory implements OnInit, OnDestroy {
+  private readonly refreshIntervalMs = 1500;
+  private refreshTimer?: ReturnType<typeof setInterval>;
+  private highlightTimer?: ReturnType<typeof setTimeout>;
+  private readonly apiUrl = 'http://localhost:5090/api/Inventory';
+  private recentlyChangedProductIds = new Set<number>();
+  lastUpdatedAt = '';
+  latestStockChange = '';
+  apiErrorMessage = '';
+
+  products: InventoryProduct[] = [
+    {productId: 1, productName: 'USB Cables Type-C', productSCU: 'USB-C-001', productCategory: 'Electronics', productAvailability: 62, productMinimum: 20, productStatus: 'Optimal', supplierContactPerson: 'John Doe', supplierContactEmail: 'jD0eI@example.com', supplierContactPhone: '123-456-7890', supplierAddress: '123 Main St, City, Country'},
+    {productId: 2, productName: 'HP Toner 26A', productSCU: 'TON-26A', productCategory: 'Office Supplies', productAvailability: 60, productMinimum: 50, productStatus: 'Optimal', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
+    {productId: 3, productName: 'A4 Paper Pack', productSCU: 'PPR-A4', productCategory: 'Office Supplies', productAvailability: 45, productMinimum: 50, productStatus: 'Good', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
+    {productId: 4, productName: 'SSD Disks 1TB', productSCU: 'SSD-1TB', productCategory: 'Hardware', productAvailability: 40, productMinimum: 50, productStatus: 'Good', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
+    {productId: 5, productName: 'AA Batteries Box', productSCU: 'BAT-AA', productCategory: 'Office Supplies', productAvailability: 25, productMinimum: 50, productStatus: 'Low', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
+    {productId: 6, productName: 'Printer Heads', productSCU: 'PRN-HEAD', productCategory: 'Hardware', productAvailability: 15, productMinimum: 50, productStatus: 'Very Low', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'}
   ]
 
-  statusColors = {
+  statusColors: Record<ProductStatus, string> = {
+    'Out of Stock': 'hsl(0, 0%, 25%)',
     Critical: 'hsl(0, 72%, 51%)',      // red
     'Very Low': 'hsl(29, 85%, 55%)',   // orange-red
     Low: 'hsl(55, 73%, 50%)',         // orange
@@ -28,9 +68,11 @@ export class Inventory {
   };
 
   newSupplier: any = {
-  supplierId: this.products.length + 1,
-  supplierName: '',
-  supplierCategory: '',
+  productName: '',
+  productSCU: '',
+  productCategory: '',
+  productAvailability: 0,
+  productMinimum: 1,
   supplierContactPerson: '',
   supplierContactEmail: '',
   supplierContactPhone: '',
@@ -39,18 +81,53 @@ export class Inventory {
 
   selectedSupplier: any = null;
 
+  constructor(
+    private http: HttpClient,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.products.forEach((product) => this.compareAvailabilityToMinimum(product));
+    this.loadInventory();
+    this.refreshTimer = setInterval(() => this.loadInventory(), this.refreshIntervalMs);
+  }
+
+  ngOnDestroy() {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
+
+    if (this.highlightTimer) {
+      clearTimeout(this.highlightTimer);
+    }
+  }
+
   addSupplier() {
-    const supplierToAdd = {
-    ...this.newSupplier
+    const supplierToAdd: InventoryProduct = {
+      productId: this.products.length + 1,
+      productName: this.newSupplier.productName || 'New Product',
+      productSCU: this.newSupplier.productSCU || 'SKU',
+      productCategory: this.newSupplier.productCategory || 'General',
+      productAvailability: Number(this.newSupplier.productAvailability) || 0,
+      productMinimum: Number(this.newSupplier.productMinimum) || 1,
+      productStatus: 'Critical',
+      supplierContactPerson: this.newSupplier.supplierContactPerson || '',
+      supplierContactEmail: this.newSupplier.supplierContactEmail || '',
+      supplierContactPhone: this.newSupplier.supplierContactPhone || '',
+      supplierAddress: this.newSupplier.supplierAddress || ''
   };
 
+  this.compareAvailabilityToMinimum(supplierToAdd);
   this.products.push(supplierToAdd);
 
   this.selectedSupplier = supplierToAdd;
 
   this.newSupplier = {
-    supplierName: '',
-    supplierCategory: '',
+    productName: '',
+    productSCU: '',
+    productCategory: '',
+    productAvailability: 0,
+    productMinimum: 1,
     supplierContactPerson: '',
     supplierContactEmail: '',
     supplierContactPhone: '',
@@ -58,7 +135,11 @@ export class Inventory {
   };
   }
 
-  compareAvailabilityToMinimum(product: any) {
+  compareAvailabilityToMinimum(product: InventoryProduct): ProductStatus {
+    if (product.productAvailability <= 0) {
+      return product.productStatus = 'Out of Stock';
+    }
+
     let availabilityPercentage = (product.productAvailability / product.productMinimum) * 100;
 
     if (availabilityPercentage <= 15) {
@@ -80,22 +161,94 @@ export class Inventory {
     return color.replace('hsl', 'hsla').replace(')', ' , 0.2)');
   }
 
-    getAvailabilityPercentage(product: any) {
+  getAvailabilityPercentage(product: InventoryProduct) {
       if (!product.productMinimum) return 0;
-      return (product.productAvailability / product.productMinimum) * 100;
+      return Math.min((product.productAvailability / product.productMinimum) * 100, 100);
     }
+
+  isRecentlyChanged(product: InventoryProduct): boolean {
+    return this.recentlyChangedProductIds.has(product.productId);
+  }
 
   get lowStockCount(): number {
     return this.products.filter(p => this.compareAvailabilityToMinimum(p) === 'Low' || this.compareAvailabilityToMinimum(p) === 'Very Low').length;
   }
 
   get criticalCount(): number {
-    return this.products.filter(p => this.compareAvailabilityToMinimum(p) === 'Critical').length;
+    return this.products.filter(p => ['Out of Stock', 'Critical'].includes(this.compareAvailabilityToMinimum(p))).length;
   }
 
   get inStockCount(): number {
     return this.products.filter(p => 
       ['Optimal', 'Good', 'Overstock'].includes(this.compareAvailabilityToMinimum(p))
     ).length;
+  }
+
+  private loadInventory() {
+    this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
+      next: (items) => {
+        const previousQuantities = new Map(
+          this.products.map((product) => [product.productId, product.productAvailability])
+        );
+        const changedProductIds = new Set<number>();
+
+        this.products = items.map((item) => ({
+          productId: item.id,
+          productName: item.name,
+          productSCU: item.sku,
+          productCategory: item.category,
+          productAvailability: item.availableQuantity,
+          productMinimum: item.minimumQuantity,
+          productStatus: item.status,
+          supplierContactPerson: item.supplierName,
+          supplierContactEmail: '',
+          supplierContactPhone: '',
+          supplierAddress: '',
+          lastConsumption: this.getLastConsumption(item, previousQuantities)
+        }));
+
+        for (const product of this.products) {
+          const previousQuantity = previousQuantities.get(product.productId);
+          if (previousQuantity !== undefined && previousQuantity !== product.productAvailability) {
+            changedProductIds.add(product.productId);
+          }
+        }
+
+        this.recentlyChangedProductIds = changedProductIds;
+        this.lastUpdatedAt = new Date().toLocaleTimeString('bg-BG');
+        this.apiErrorMessage = '';
+
+        if (changedProductIds.size > 0) {
+          const changedProducts = this.products.filter((product) => changedProductIds.has(product.productId));
+          this.latestStockChange = changedProducts
+            .map((product) => `${product.productName} -${product.lastConsumption ?? 1}`)
+            .join(', ');
+
+          if (this.highlightTimer) {
+            clearTimeout(this.highlightTimer);
+          }
+
+          this.highlightTimer = setTimeout(() => {
+            this.recentlyChangedProductIds = new Set<number>();
+            this.changeDetectorRef.detectChanges();
+          }, 5000);
+        }
+
+        this.changeDetectorRef.detectChanges();
+      },
+      error: () => {
+        this.apiErrorMessage = 'Backend inventory API is not reachable. Showing local demo data.';
+        this.changeDetectorRef.detectChanges();
+      }
+    });
+  }
+
+  private getLastConsumption(item: ApiInventoryItem, previousQuantities: Map<number, number>): number | undefined {
+    const previousQuantity = previousQuantities.get(item.id);
+    if (previousQuantity !== undefined && previousQuantity > item.availableQuantity) {
+      return previousQuantity - item.availableQuantity;
+    }
+
+    return item.lastConsumedQuantity || undefined;
   }
 }

@@ -116,6 +116,21 @@
     color: white;
 }
 
+.status.confirmed {
+    background: #8b5cf6;
+    color: white;
+}
+
+.status.delivered {
+    background: #22c55e;
+    color: white;
+}
+
+.status.cancelled {
+    background: #ef4444;
+    color: white;
+}
+
 /* META */
 .meta {
     display: flex;
@@ -134,6 +149,41 @@
 .meta svg {
     width: 16px;
     height: 16px;
+}
+
+.status-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.next-status-btn,
+.status-select {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #1f2937;
+    padding: 8px 10px;
+    font-size: 13px;
+}
+
+.next-status-btn {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.next-status-btn:hover:not(:disabled) {
+    background: #1f2937;
+    color: white;
+}
+
+.next-status-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.status-select {
+    min-width: 112px;
 }
 
 /* RIGHT */
