@@ -1,0 +1,191 @@
+<div class="page">
+    <div class="intro">
+        <div class="title">
+            <h1>Dashboard</h1>
+            <p>Overview of your supply chain performance</p>
+        </div>
+    </div>
+
+    <div class="dashboard"> 
+        <div class="cards">
+            <!-- Card 1 -->
+            <div class="card1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
+                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <div class="card-text">
+                    <span class="card-label">ORDERS</span>
+                    <span class="card-value">1,234</span>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L0.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
+                    </svg>
+                <div class="card-text">
+                    <span class="card-label">PRODUCTS IN STOCK</span>
+                    <span class="card-value">567</span>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-triangle" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                </svg>
+                <div class="card-text">
+                    <span class="card-label">LOW STOCK</span>
+                    <span class="card-value">89</span>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="card4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
+                    <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                </svg>
+                <div class="card-text">
+                    <span class="card-label">LATE DELIVERIES</span>
+                    <span class="card-value">123</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAR CHART -->
+        <div class="card chart-card">
+            <h6>Monthly Orders</h6>
+            <div class="chart-container">
+                <div class="y-axis">
+                    <div *ngFor="let step of scaleSteps"
+                        class="y-label"
+                        [style.bottom.%]="(step / scaleSteps[scaleSteps.length - 1]) * 100">
+                        {{ step }}
+                    </div>
+                </div>
+                <div class="chart">
+                    <div class="grid"></div>
+                    <div class="bars">
+                        <div class="section" *ngFor="let month of months; let i = index">
+                            <div class="bar-wrapper">
+                                <div class="bar"
+                                    [style.height.%]="(chartValues[i] / scaleSteps[scaleSteps.length - 1]) * 100">
+                                </div>
+                                <div class="info">
+                                    <span>{{ month }}</span>
+                                    <span>{{ chartValues[i] }}</span>
+                                </div>
+                            </div>
+                            <span class="label">{{ month }}</span>
+                            <span class="label-mobile">{{ month.slice(0, 3) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+        <!-- ROW: LINE CHART + LOW STOCK -->
+        <div class="bottom-row">
+
+            <!-- LINE CHART -->
+            <div class="card chart-card flex-chart">
+                <h6 class="trend-title">Stock Trend</h6>
+                <span class="trend-subtitle">Last 7 days</span>
+
+                <div class="line-chart-container">
+
+                    <!-- Y LABELS: absolutely positioned to match grid -->
+                    <div class="line-y-axis">
+                        <span *ngFor="let step of stockScaleStepsReversed"
+                        class="line-y-label">{{ step }}</span>
+                    </div>
+
+                    <div class="line-chart-wrapper">
+                        <svg class="line-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+                            <line x1="0" y1="0"   x2="600" y2="0"   class="grid-line"/>
+                            <line x1="0" y1="50"  x2="600" y2="50"  class="grid-line"/>
+                            <line x1="0" y1="100" x2="600" y2="100" class="grid-line"/>
+                            <line x1="0" y1="150" x2="600" y2="150" class="grid-line"/>
+                            <line x1="0" y1="200" x2="600" y2="200" class="grid-line"/>
+
+
+                            <polygon
+                                [attr.points]="getAreaPoints(stockTrend, stockScaleSteps[stockScaleSteps.length-1], 600, 200)"
+                                class="area"/>
+                            <polyline
+                                [attr.points]="getLinePoints(stockTrend, stockScaleSteps[stockScaleSteps.length-1], 600, 200)"
+                                class="line"/>
+                            <circle *ngFor="let v of stockTrend; let i = index"
+                                [attr.cx]="(i / (stockTrend.length - 1)) * 600"
+                                [attr.cy]="200 - (v / stockScaleSteps[stockScaleSteps.length-1]) * 200"
+                                r="4"
+                                class="dot"/>
+                        </svg>
+
+                        <div class="x-labels">
+                            <span *ngFor="let day of weekDays; let i = index"
+                                class="x-label"
+                                [style.left.%]="(i / (weekDays.length - 1)) * 100">
+                                {{ day }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOW STOCK PANEL -->
+            <div class="card low-stock-card">
+                <div class="low-stock-header">
+                    <div class="low-stock-icon">
+                        <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert w-4 h-4 text-destructive"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg></span>
+                    </div>
+                    <div>
+                        <h6 class="low-stock-title">Low Stock</h6>
+                        <span class="low-stock-subtitle">Products below minimum quantity</span>
+                    </div>
+                </div>
+
+                <div class="low-stock-list">
+                    <div class="low-stock-item" *ngFor="let item of lowStockItems">
+                        <div class="low-stock-item-row">
+                            <span class="low-stock-name">{{ item.name }}</span>
+                            <span class="low-stock-badge">{{ item.current }}/{{ item.min }}</span>
+                        </div>
+                        <div class="low-stock-bar-bg">
+                            <div class="low-stock-bar-fill"
+                                [style.width.%]="getLowStockPercent(item.current, item.min)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- LATE DELIVERIES -->
+        <div class="card late-deliveries-card">
+            <div class="late-deliveries-header">
+                <div class="late-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck w-4 h-4 text-warning"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg></div>
+                <div>
+                    <h6 class="late-title">Late Deliveries</h6>
+                    <span class="late-subtitle">{{ lateDeliveries.length }} deliveries with delay</span>
+                </div>
+            </div>
+
+            <div class="late-list">
+                <div class="late-item" *ngFor="let item of lateDeliveries">
+                    <div class="late-days-badge text-warning">{{ item.days }}d</div>
+                    <div class="late-item-info text-warning">
+                        <span class="late-item-name">{{ item.name }}</span>
+                        <span class="late-item-sub">{{ item.supplier }} · {{ item.order }}</span>
+                    </div>
+                    <div class="late-arrow">→</div>
+                </div>
+            </div> 
+        </div>
+</div>

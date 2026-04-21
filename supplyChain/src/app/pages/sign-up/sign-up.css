@@ -1,21 +1,132 @@
-.container {
+    .page {
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #553068, #e0e0e0);
+    }
+    .container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color:#1B0B23;
+    }
+
+    form {
+        width: 600px;
+        padding: 30px;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        background: radial-gradient(#e9d2f5e1);
+    }
+
+    .form-group{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .full-width{
+        grid-column: span 2;
+    }
+
+    label{
+        margin-bottom:5px;
+    }
+
+    .form-control{
+        width:100%;
+        border:1px solid #ccc;
+        padding-right: 40px;
+        border-radius:5px;
+    }
+
+    .form-control::placeholder{
+        color: #717171;
+        width: 100%;
+        height: 100%;
+    }
+
+    .form-control:focus{
+        outline:1.5px solid #985BB9;
+        border-color:#985BB9;
+        box-shadow:0 0 0 4px rgba(168,85,247,0.2);
+    }
+
+    .btn{
+        margin-top: 5%;
+        width: 100%;
+        padding:10px 30px;
+        color:white;
+        background: linear-gradient(135deg,#985BB9,#553068);
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+
+        grid-column: span 2;      /* take both columns */
+        justify-self: center;     /* center inside them */
+    }
+
+
+    .btn:hover{
+        opacity: 0.8;
+    }
+
+    h1{
+        text-align:center;
+        margin-bottom:20px;
+        grid-column: span 2;
+    }
+
+    .logIn{
+        text-align:center;
+        margin-top:10px;
+        grid-column: span 2;
+    }
+.log-in{
+    text-decoration: none; 
+    color: #553068; 
+}
+
+.log-in:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.error-box {
+    grid-column: span 2;   /* ЗАДЪЛЖИТЕЛНО за grid */
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    gap: 8px;
+    margin-top: 5px;
 }
 
-form {
-    width: 300px;
-    background-color: rgb(215, 143, 238);
-    padding: 20px;
-    border-radius: 5px;
+.icon {
+    color: red;
+    flex-shrink: 0;
 }
 
-.btn {
-    width: 100%;
-    margin-top: 10px;
-    color: white;
-    
-}   
+.error-text {
+    color: red;
+    font-size: 14px;
+    margin: 0;
+}
+
+.password-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.password-wrapper .btn-toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+}

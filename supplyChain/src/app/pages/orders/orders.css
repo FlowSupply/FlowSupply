@@ -1,0 +1,209 @@
+.intro {
+  padding: 28px 32px 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.intro h1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.intro p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+.searchFilter {
+    display: flex;
+    justify-content: center; 
+    background-color: white;
+    width: 95%;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    margin: 0 auto 20px auto; 
+    gap: 20px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: whitesmoke;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.form-control:focus {
+    outline:1.5px solid #985BB9;
+    border-color:#985BB9;
+    box-shadow:0 0 0 4px rgba(168,85,247,0.2);
+}
+
+.filterBtn {
+    width: 17%;
+    align-items: center;
+    justify-content: space-between;
+    background-color: whitesmoke;
+    border: 1px solid #ccc;
+    color: black;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.filterBtn:hover {
+    background-color: #985BB9;
+    color: white;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 32px 32px;
+}
+
+/* CARD */
+.order-card {
+    display: flex;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #d7d7d7;
+    overflow: hidden;
+}
+
+/* LEFT */
+.order-left {
+    width: 35%;
+    padding: 20px;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.order-id {
+    font-weight: 600;
+    color: #333;
+}
+
+.order-left h3 {
+    margin: 10px 0;
+}
+
+/* STATUS */
+.status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.status.pending {
+    background: #facc15;
+}
+
+.status.shipped {
+    background: #3b82f6;
+    color: white;
+}
+
+/* META */
+.meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    color: #666;
+}
+
+.meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.meta svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* RIGHT */
+.order-right {
+    width: 65%;
+    padding: 20px;
+    border-left: 1px solid #d7d7d7;
+}
+
+/* TIMELINE */
+.timeline {
+    position: relative;
+    margin-top: 10px;
+}
+
+.step {
+    display: flex;
+    gap: 10px;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.step:last-child {
+    padding-bottom: 0;
+}
+
+/* vertical line */
+.step::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 20px;
+    width: 2px;
+    height: 40%;
+    background: #ddd;
+}
+
+.step:last-child::before {
+    display: none;
+}
+
+/* dot */
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    margin-top: 4px;
+}
+
+/* DONE STATE */
+.step.done .dot {
+    background: #2ea66a;
+}
+
+.step.done::before {
+    background: #2ea66a;
+}
+
+/* TEXT */
+.step-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 14px;
+}
+
+.date {
+    font-size: 12px;
+    color: #888;
+}

@@ -1,0 +1,176 @@
+<!-- OVERLAY -->
+<div 
+  class="overlay"
+  [class.show]="isSidebarOpen"
+  (click)="isSidebarOpen = false">
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside 
+    class="sidebar"
+    [class.open]="isSidebarOpen"
+    [class.collapsed]="isCollapsed">
+
+    <!-- HEADER -->
+    <div class="header-row">
+
+      <div class="header-left" *ngIf="!isCollapsed">
+        <img class="logo-img" [src]="'flowSupplyLogoWithText.png'" alt="FlowSupply Logo">
+      </div>
+
+      <div class="collapsed-logo-container" *ngIf="isCollapsed">
+        <img class="logo-img collapsed" [src]="'flowSupplyLogo.png'" alt="FlowSupply Logo">
+      </div>
+
+      <button class="collapse-btn d-md-block" (click)="toggleCollapse()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z"/>
+        </svg>
+     </button>
+
+    </div>
+
+    <!-- MENU -->
+    <div class="menu">
+      <ul class="nav-section list-unstyled w-100">
+
+        <!-- DASHBOARD -->
+        <li>
+          <a class="nav-link-custom"
+             routerLink="/dashboard"
+             routerLinkActive="active"
+             (click)="isSidebarOpen = false" class="nav-link-custom" [class.active]="isActive('/dashboard')" (click)="setActive('dashboard')">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard w-[18px] h-[18px] transition-transform duration-200">
+                <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+                <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+                <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+                <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+              </svg>
+            </span>
+            <span *ngIf="!isCollapsed">Dashboard</span>
+          </a>
+        </li>
+
+        <!-- SUPPLIERS -->
+        <li>
+          <a class="nav-link-custom"
+             routerLink="/suppliers"
+             routerLinkActive="active"
+             (click)="isSidebarOpen = false; setActive('suppliers')" class="nav-link-custom" [class.active]="isActive('/suppliers')">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2 w-[18px] h-[18px] transition-transform duration-200 group-hover:scale-110">
+                <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+                <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+                <path d="M10 6h4"></path>
+                <path d="M10 10h4"></path>
+                <path d="M10 14h4"></path>
+                <path d="M10 18h4"></path>
+              </svg>
+            </span>
+            <span *ngIf="!isCollapsed">Suppliers</span>
+          </a>
+        </li>
+
+        <!-- INVENTORY -->
+        <li>
+          <a class="nav-link-custom"
+             routerLink="/inventory"
+             routerLinkActive="active"
+             (click)="isSidebarOpen = false; setActive('inventory')" class="nav-link-custom" [class.active]="isActive('/inventory')">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
+              </svg>
+            </span>
+            <span *ngIf="!isCollapsed">Inventory</span>
+          </a>
+        </li>
+
+        <!-- REQUESTS -->
+        <li>
+          <a class="nav-link-custom"
+             routerLink="/purchase-requests"
+             routerLinkActive="active"
+             (click)="isSidebarOpen = false; setActive('purchase-requests')" class="nav-link-custom" [class.active]="isActive('/purchase-requests')">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text w-[18px] h-[18px] transition-transform duration-200 group-hover:scale-110">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                <path d="M10 9H8"></path>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+              </svg>
+            </span>
+            <span *ngIf="!isCollapsed">Requests</span>
+          </a>
+        </li>
+
+        <!-- APPROVALS -->
+        <li>
+          <a class="nav-link-custom"
+             routerLink="/approvals"
+             routerLinkActive="active"
+             (click)="isSidebarOpen = false; setActive('approvals')" class="nav-link-custom" [class.active]="isActive('/approvals')">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+              </svg>
+            </span>
+            <span *ngIf="!isCollapsed">Approvals</span>
+          </a>
+        </li>
+
+        <!-- ORDERS -->
+        <li>
+          <a class="nav-link-custom"
+             routerLink="/orders"
+             routerLinkActive="active"
+             (click)="isSidebarOpen = false; setActive('orders')" class="nav-link-custom" [class.active]="isActive('/orders')">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
+                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l.84 4.479 9.144-.459L13.89 4zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+              </svg>
+            </span>
+            <span *ngIf="!isCollapsed">Orders</span>
+          </a>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-row">
+      <img class="avatar" src="favicon.ico">
+
+      <div class="userInfo" *ngIf="!isCollapsed">
+        <p class="username">Kristiyan Vakov</p>
+        <p class="email">kristian.vakov@gmail.com</p>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MOBILE TOGGLE -->
+<div class="mobile-topbar d-flex d-md-none">
+  <button class="menu-toggle" type="button" (click)="toggleSidebar()">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24">
+      <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+    </svg>
+  </button>
+
+  <div class="mobile-brand">
+    <img src="flowSupplyLogoWithText.png" alt="FlowSupply Logo" class="mobile-logo" />
+  </div>
+</div>
+
+  <!-- CONTENT -->
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>
