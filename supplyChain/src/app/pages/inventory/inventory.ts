@@ -169,17 +169,19 @@ export class Inventory implements OnInit, OnDestroy {
   }
 
   get lowStockCount(): number {
-    return this.products.filter(p => this.compareAvailabilityToMinimum(p) === 'Low' || this.compareAvailabilityToMinimum(p) === 'Very Low').length;
+    return this.products.filter(p => ['Low', 'Very Low'].includes(this.compareAvailabilityToMinimum(p))).length;
   }
 
   get criticalCount(): number {
-    return this.products.filter(p => ['Out of Stock', 'Critical'].includes(this.compareAvailabilityToMinimum(p))).length;
+    return this.products.filter(p => this.compareAvailabilityToMinimum(p) === 'Critical').length;
+  }
+
+  get outOfStockCount(): number {
+    return this.products.filter(p => this.compareAvailabilityToMinimum(p) === 'Out of Stock').length;
   }
 
   get inStockCount(): number {
-    return this.products.filter(p => 
-      ['Optimal', 'Good', 'Overstock'].includes(this.compareAvailabilityToMinimum(p))
-    ).length;
+    return this.products.filter(p => ['Optimal', 'Overstock'].includes(this.compareAvailabilityToMinimum(p))).length;
   }
 
   private loadInventory() {

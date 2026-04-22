@@ -79,6 +79,8 @@ public class OrdersController : ControllerBase
     private async Task ApplyOrderStatus(Order order, string nextStatus)
     {
         var previousStatus = order.Status;
+        var shouldApplyDeliveryToInventory = nextStatus == "Delivered" && previousStatus != "Delivered";
+
         order.Status = nextStatus;
 
         switch (nextStatus)
@@ -117,15 +119,26 @@ public class OrdersController : ControllerBase
                 break;
         }
 
-        if (nextStatus == "Delivered" && previousStatus != "Delivered")
+        if (shouldApplyDeliveryToInventory)
         {
-            var product = await _db.Products
-                .FirstOrDefaultAsync(p => p.ProductName == order.ProductName);
-
-            if (product != null)
-            {
-                product.ProductAvailability += order.Quantity;
-            }
+            await AddDeliveredOrderQuantityToInventory(order);
         }
     }
+
+    private async Task AddDeliveredOrderQuantityToInventory(Order order)
+    {
+        var orderProductName = NormalizeProductName(order.ProductName);
+        var product = await _db.Products
+            .FirstOrDefaultAsync(p => p.ProductName.ToLower().Trim() == orderProductName);
+
+        if (product == null)
+        {
+            throw new InvalidOperationException($"Cannot deliver order because product '{order.ProductName}' does not exist in inventory.");
+        }
+
+        product.ProductAvailability += order.Quantity;
+    }
+
+    private static string NormalizeProductName(string productName) =>
+        productName.Trim().ToLowerInvariant();
 }

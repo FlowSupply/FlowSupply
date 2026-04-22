@@ -128,6 +128,11 @@
   color: #ef4444;
 }
 
+.dark-icon {
+  background: #11182720;
+  color: #111827;
+}
+
 .stat-purple {
   background: linear-gradient(135deg, #985bb939, #fff);
 }
@@ -142,6 +147,10 @@
 
 .stat-red {
   background: linear-gradient(135deg, #ef444439, #fff);
+}
+
+.stat-dark {
+  background: linear-gradient(135deg, #11182726, #fff);
 }
 
 /* ===== SEARCH & FILTER ===== */
