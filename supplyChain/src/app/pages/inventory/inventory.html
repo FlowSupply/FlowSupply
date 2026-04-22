@@ -1,0 +1,154 @@
+<div class="page">
+
+  <!-- Add Product Modal -->
+  <div class="modal-overlay" *ngIf="isModalOpen" (click)="isModalOpen = false">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Add Product</h2>
+          <p class="modal-subtitle">Add a new product to inventory</p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Product Name</label>
+            <input class="form-input" type="text" [(ngModel)]="newProduct.productName" placeholder="e.g. HP Toner 26A" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU</label>
+            <input class="form-input" type="text" [(ngModel)]="newProduct.productSKU" placeholder="e.g. HP-26A-BLK" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input class="form-input" type="text" [(ngModel)]="newProduct.productCategory" placeholder="e.g. Office Supplies" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Current Stock</label>
+            <input class="form-input" type="number" [(ngModel)]="newProduct.productAvailability" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum Stock</label>
+            <input class="form-input" type="number" [(ngModel)]="newProduct.productMinimum" min="1" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-submit" (click)="submitProduct()" [disabled]="!newProduct.productName">Add Product</button>
+        <button class="btn-cancel-modal" (click)="isModalOpen = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="intro">
+    <div class="title">
+      <h1>Inventory</h1>
+      <p>Stock Levels and Product Management</p>
+    </div>
+    <button class="btn-add" (click)="isModalOpen = true">+ Add Product</button>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stats-row">
+    <div class="stat-card stat-purple">
+      <div class="stat-icon purple-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">TOTAL PRODUCTS</span>
+        <span class="stat-value">{{ products.length }}</span>
+      </div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="stat-icon green-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">IN STOCK</span>
+        <span class="stat-value">{{ inStockCount }}</span>
+      </div>
+    </div>
+    <div class="stat-card stat-yellow">
+      <div class="stat-icon yellow-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">LOW STOCK</span>
+        <span class="stat-value">{{ lowStockCount }}</span>
+      </div>
+    </div>
+    <div class="stat-card stat-red">
+      <div class="stat-icon red-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">CRITICAL</span>
+        <span class="stat-value">{{ criticalCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="container-fluid searchFilter mt-4 mb-3">
+    <input class="form-control" type="text" placeholder="Search products..." [(ngModel)]="searchTerm" />
+    <button class="filterBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/></svg>
+      Filters
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="suppliersTable">
+    <div class="table-scroll-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>PRODUCT</th>
+            <th>SKU</th>
+            <th>CATEGORY</th>
+            <th>AVAILABILITY</th>
+            <th>MIN.</th>
+            <th>STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of filteredProducts">
+            <td>
+              <div class="product-cell">
+                <div class="product-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/></svg>
+                </div>
+                <div class="product-meta">
+                  <span class="product-name">{{ product.productName }}</span>
+                  <span class="product-id">#{{ product.productId }}</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="sku-badge">{{ product.productSKU }}</span></td>
+            <td class="text-muted">{{ product.productCategory }}</td>
+            <td>
+              <div class="availability-cell">
+                <span class="availability-number">{{ product.productAvailability }}</span>
+                <div class="progress" [ngStyle]="{ 'background-color': getLightColor(statusColors[compareAvailabilityToMinimum(product)]) }">
+                  <div class="progress-fill"
+                       [ngStyle]="{ 'width': getAvailabilityPercentage(product) + '%', 'background-color': statusColors[compareAvailabilityToMinimum(product)] }">
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="text-muted">{{ product.productMinimum }}</td>
+            <td>
+              <span class="status-badge" [ngStyle]="{ 'background-color': statusColors[compareAvailabilityToMinimum(product)] }">
+                {{ compareAvailabilityToMinimum(product) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
