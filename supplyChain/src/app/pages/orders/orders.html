@@ -31,8 +31,10 @@
           <span class="status"
                 [ngClass]="{
                   'status-pending':   order.status === 'Pending',
+                  'status-confirmed': order.status === 'Confirmed',
                   'status-shipped':   order.status === 'Shipped',
-                  'status-delivered': order.status === 'Delivered'
+                  'status-delivered': order.status === 'Delivered',
+                  'status-cancelled': order.status === 'Cancelled'
                 }">
             {{ order.status }}
           </span>
@@ -60,8 +62,19 @@
                 *ngIf="canAdvance(order)"
                 (click)="advanceStatus(order)">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
-          Mark as {{ order.status === 'Pending' ? 'Shipped' : 'Delivered' }}
+          Mark as {{ order.status === 'Pending' ? 'Confirmed' : order.status === 'Confirmed' ? 'Shipped' : 'Delivered' }}
         </button>
+
+        <div class="status-actions">
+          <select
+            class="status-select"
+            [ngModel]="order.status"
+            (ngModelChange)="changeStatus(order, $event)">
+            <option *ngFor="let statusOption of statusOptions" [ngValue]="statusOption">
+              {{ getStatusLabel(statusOption) }}
+            </option>
+          </select>
+        </div>
       </div>
 
       <!-- RIGHT (TIMELINE) -->
@@ -70,7 +83,8 @@
         <div class="timeline">
           <div class="step"
                *ngFor="let step of getSteps(order)"
-               [class.done]="step.done">
+               [class.done]="step.done"
+               [class.cancelled]="step.cancelled">
             <div class="dot"></div>
             <div class="step-content">
               <span class="label">{{ step.label }}</span>
