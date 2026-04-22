@@ -520,6 +520,18 @@ label {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
 }
 
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #ef4444;
+}
+
+.form-control.ng-invalid.ng-touched {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
 .submit-btn {
   height: 42px;
   border: none;

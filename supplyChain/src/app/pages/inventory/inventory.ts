@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 type ProductStatus = 'Out of Stock' | 'Critical' | 'Very Low' | 'Low' | 'Good' | 'Optimal' | 'Overstock';
 
@@ -21,15 +21,12 @@ interface InventoryProduct {
 }
 
 interface ApiInventoryItem {
-  id: number;
-  name: string;
-  sku: string;
-  category: string;
-  availableQuantity: number;
-  minimumQuantity: number;
-  status: ProductStatus;
-  supplierName: string;
-  lastConsumedQuantity: number;
+  productId: number;
+  productName: string;
+  productSKU: string;
+  productCategory: string;
+  productAvailability: number;
+  productMinimum: number;
 }
 
 @Component({
@@ -42,7 +39,7 @@ export class Inventory implements OnInit, OnDestroy {
   private readonly refreshIntervalMs = 1500;
   private refreshTimer?: ReturnType<typeof setInterval>;
   private highlightTimer?: ReturnType<typeof setTimeout>;
-  private readonly apiUrl = 'http://localhost:5090/api/Inventory';
+  private readonly apiUrl = 'http://localhost:5090/api/products';
   private recentlyChangedProductIds = new Set<number>();
   lastUpdatedAt = '';
   latestStockChange = '';
@@ -185,7 +182,7 @@ export class Inventory implements OnInit, OnDestroy {
   }
 
   private loadInventory() {
-    this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
+    this.http.get<ApiInventoryItem[]>(this.apiUrl, { headers: this.getHeaders() }).subscribe({
       next: (items) => {
         const previousQuantities = new Map(
           this.products.map((product) => [product.productId, product.productAvailability])
@@ -193,14 +190,14 @@ export class Inventory implements OnInit, OnDestroy {
         const changedProductIds = new Set<number>();
 
         this.products = items.map((item) => ({
-          productId: item.id,
-          productName: item.name,
-          productSCU: item.sku,
-          productCategory: item.category,
-          productAvailability: item.availableQuantity,
-          productMinimum: item.minimumQuantity,
-          productStatus: item.status,
-          supplierContactPerson: item.supplierName,
+          productId: item.productId,
+          productName: item.productName,
+          productSCU: item.productSKU,
+          productCategory: item.productCategory,
+          productAvailability: item.productAvailability,
+          productMinimum: item.productMinimum,
+          productStatus: this.getProductStatus(item.productAvailability, item.productMinimum),
+          supplierContactPerson: '',
           supplierContactEmail: '',
           supplierContactPhone: '',
           supplierAddress: '',
@@ -244,11 +241,26 @@ export class Inventory implements OnInit, OnDestroy {
   }
 
   private getLastConsumption(item: ApiInventoryItem, previousQuantities: Map<number, number>): number | undefined {
-    const previousQuantity = previousQuantities.get(item.id);
-    if (previousQuantity !== undefined && previousQuantity > item.availableQuantity) {
-      return previousQuantity - item.availableQuantity;
+    const previousQuantity = previousQuantities.get(item.productId);
+    if (previousQuantity !== undefined && previousQuantity > item.productAvailability) {
+      return previousQuantity - item.productAvailability;
     }
 
-    return item.lastConsumedQuantity || undefined;
+    return undefined;
+  }
+
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
+  private getProductStatus(availability: number, minimum: number): ProductStatus {
+    const product = {
+      productAvailability: availability,
+      productMinimum: minimum,
+      productStatus: 'Optimal' as ProductStatus
+    } as InventoryProduct;
+
+    return this.compareAvailabilityToMinimum(product);
   }
 }

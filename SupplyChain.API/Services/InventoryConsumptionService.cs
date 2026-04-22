@@ -31,64 +31,35 @@ public class InventoryConsumptionService : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var items = await context.InventoryItems
-            .Where(item => item.AvailableQuantity > 0)
-            .OrderBy(item => item.Id)
+        var products = await context.Products
+            .Where(product => product.ProductAvailability > 0)
+            .OrderBy(product => product.ProductId)
             .ToListAsync(stoppingToken);
 
-        if (items.Count == 0)
+        if (products.Count == 0)
         {
             return;
         }
 
-        foreach (var item in items)
-        {
-            item.LastConsumedQuantity = 0;
-        }
-
-        var updatesCount = Math.Min(items.Count, Random.Shared.Next(1, 4));
-        var targetItems = items
+        var updatesCount = Math.Min(products.Count, Random.Shared.Next(1, 4));
+        var targetProducts = products
             .OrderBy(_ => Random.Shared.Next())
             .Take(updatesCount);
 
-        foreach (var targetItem in targetItems)
+        foreach (var targetProduct in targetProducts)
         {
-            var consumedQuantity = Math.Min(targetItem.AvailableQuantity, GetWeightedConsumptionQuantity());
+            var consumedQuantity = Math.Min(targetProduct.ProductAvailability, GetWeightedConsumptionQuantity());
 
-            targetItem.AvailableQuantity -= consumedQuantity;
-            targetItem.LastConsumedQuantity = consumedQuantity;
-            targetItem.Status = GetStatus(targetItem.AvailableQuantity, targetItem.MinimumQuantity);
+            targetProduct.ProductAvailability -= consumedQuantity;
 
             _logger.LogInformation(
-                "Consumed {ConsumedQuantity} from inventory item {ItemName}. Remaining: {AvailableQuantity}",
+                "Consumed {ConsumedQuantity} from product {ProductName}. Remaining: {AvailableQuantity}",
                 consumedQuantity,
-                targetItem.Name,
-                targetItem.AvailableQuantity);
+                targetProduct.ProductName,
+                targetProduct.ProductAvailability);
         }
 
         await context.SaveChangesAsync(stoppingToken);
-    }
-
-    private static string GetStatus(int availableQuantity, int minimumQuantity)
-    {
-        if (availableQuantity <= 0)
-        {
-            return "Out of Stock";
-        }
-
-        var availabilityPercentage = minimumQuantity == 0
-            ? 0
-            : (availableQuantity / (double)minimumQuantity) * 100;
-
-        return availabilityPercentage switch
-        {
-            <= 15 => "Critical",
-            <= 30 => "Very Low",
-            <= 50 => "Low",
-            <= 80 => "Good",
-            <= 100 => "Optimal",
-            _ => "Overstock"
-        };
     }
 
     private static int GetWeightedConsumptionQuantity()

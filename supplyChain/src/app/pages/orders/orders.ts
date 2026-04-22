@@ -1,36 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
-
-interface OrderStep {
-  label: string;
-  date: string | null;
-  status: OrderStatus;
-  done: boolean;
-}
-
-interface ShoppingOrder {
-  id: string;
-  title: string;
-  supplier: string;
+export interface Order {
+  orderId: string;
+  productName: string;
   quantity: number;
-  date: string;
-  status: OrderStatus;
-  statusLabel: string;
-  steps: OrderStep[];
+  supplierName: string;
+  status: string;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  requestId: string;
 }
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'Чакаща',
-  confirmed: 'Потвърдена',
-  shipped: 'Изпратена',
-  delivered: 'Доставена',
-  cancelled: 'Отказана'
-};
-
-const ACTIVE_STATUS_FLOW: OrderStatus[] = ['pending', 'confirmed', 'shipped', 'delivered'];
 
 @Component({
   selector: 'app-orders',
@@ -38,93 +21,71 @@ const ACTIVE_STATUS_FLOW: OrderStatus[] = ['pending', 'confirmed', 'shipped', 'd
   templateUrl: './orders.html',
   styleUrl: './orders.css',
 })
-export class Orders {
-  readonly statusOptions: OrderStatus[] = [...ACTIVE_STATUS_FLOW, 'cancelled'];
+export class Orders implements OnInit {
+  orders: Order[] = [];
+  searchTerm = '';
 
-  orders: ShoppingOrder[] = [
-    {
-      id: 'ORD-2045',
-      title: 'Тонер HP 26A',
-      supplier: 'TechParts BG',
-      quantity: 50,
-      date: '16.03.2026',
-      status: 'pending',
-      statusLabel: STATUS_LABELS.pending,
-      steps: [
-        { label: 'Order created', date: '16.03.2026', status: 'pending', done: true },
-        { label: 'Confirmed by supplier', date: null, status: 'confirmed', done: false },
-        { label: 'Shipped', date: null, status: 'shipped', done: false },
-        { label: 'Delivered', date: null, status: 'delivered', done: false }
-      ]
-    },
-    {
-      id: 'ORD-2044',
-      title: 'Хартия A4 (200 пакета)',
-      supplier: 'BG Office Pro',
-      quantity: 200,
-      date: '13.03.2026',
-      status: 'shipped',
-      statusLabel: STATUS_LABELS.shipped,
-      steps: [
-        { label: 'Order created', date: '13.03.2026', status: 'pending', done: true },
-        { label: 'Confirmed by supplier', date: '13.03.2026', status: 'confirmed', done: true },
-        { label: 'Shipped', date: '15.03.2026', status: 'shipped', done: true },
-        { label: 'Delivered', date: null, status: 'delivered', done: false }
-      ]
-    },
-    {
-      id: 'ORD-2046',
-      title: 'USB-C кабели',
-      supplier: 'ElektroSupply',
-      quantity: 120,
-      date: '18.03.2026',
-      status: 'confirmed',
-      statusLabel: STATUS_LABELS.confirmed,
-      steps: [
-        { label: 'Order created', date: '18.03.2026', status: 'pending', done: true },
-        { label: 'Confirmed by supplier', date: '18.03.2026', status: 'confirmed', done: true },
-        { label: 'Shipped', date: null, status: 'shipped', done: false },
-        { label: 'Delivered', date: null, status: 'delivered', done: false }
-      ]
-    }
-  ];
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
-  changeStatus(order: ShoppingOrder, status: OrderStatus) {
-    order.status = status;
-    order.statusLabel = STATUS_LABELS[status];
+  ngOnInit() { this.loadOrders(); }
 
-    if (status === 'cancelled') {
-      order.steps = order.steps.map((step) => ({ ...step, done: false }));
-      return;
-    }
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  }
 
-    const activeStatusIndex = ACTIVE_STATUS_FLOW.indexOf(status);
-    order.steps = order.steps.map((step) => {
-      const stepIndex = ACTIVE_STATUS_FLOW.indexOf(step.status);
-      const done = stepIndex <= activeStatusIndex;
+  loadOrders() {
+    this.http.get<Order[]>('http://localhost:5090/api/orders', { headers: this.getHeaders() })
+      .subscribe({
+        next: (data) => {
+          this.orders = data;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error loading orders:', err)
+      });
+  }
 
-      return {
-        ...step,
-        done,
-        date: done ? step.date ?? this.today() : null
-      };
+  advanceStatus(order: Order) {
+    if (order.status === 'Delivered') return;
+    this.http.patch(
+      `http://localhost:5090/api/orders/${order.orderId}/advance`,
+      {},
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (updated: any) => {
+        const i = this.orders.findIndex(o => o.orderId === order.orderId);
+        if (i !== -1) this.orders[i] = updated;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error advancing order:', err)
     });
   }
 
-  moveToNextStatus(order: ShoppingOrder) {
-    if (order.status === 'cancelled' || order.status === 'delivered') {
-      return;
-    }
-
-    const currentIndex = ACTIVE_STATUS_FLOW.indexOf(order.status);
-    this.changeStatus(order, ACTIVE_STATUS_FLOW[currentIndex + 1]);
+  get filteredOrders() {
+    if (!this.searchTerm) return this.orders;
+    const term = this.searchTerm.toLowerCase();
+    return this.orders.filter(o =>
+      o.productName.toLowerCase().includes(term) ||
+      o.supplierName.toLowerCase().includes(term)
+    );
   }
 
-  getStatusLabel(status: OrderStatus): string {
-    return STATUS_LABELS[status];
+  // Build timeline steps from order data
+  getSteps(order: Order) {
+    return [
+      { label: 'Order created',          date: order.createdAt,   done: true },
+      { label: 'Confirmed by supplier',  date: order.shippedAt,   done: order.status === 'Shipped' || order.status === 'Delivered' },
+      { label: 'Shipped',                date: order.shippedAt,   done: order.status === 'Shipped' || order.status === 'Delivered' },
+      { label: 'Delivered',              date: order.deliveredAt, done: order.status === 'Delivered' }
+    ];
   }
 
-  private today(): string {
-    return new Date().toLocaleDateString('bg-BG');
+  canAdvance(order: Order) {
+    return order.status !== 'Delivered';
+  }
+
+  formatDate(dateStr: string | null): string {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-GB');
   }
 }

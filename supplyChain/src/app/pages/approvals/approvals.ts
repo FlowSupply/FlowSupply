@@ -1,5 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+export interface PurchaseRequest {
+  requestId: string;
+  productName: string;
+  quantity: number;
+  reason: string;
+  priority: string;
+  date: string;
+  status: string;
+}
 
 @Component({
   selector: 'app-approvals',
@@ -7,41 +18,48 @@ import { CommonModule } from '@angular/common';
   templateUrl: './approvals.html',
   styleUrl: './approvals.css',
 })
-export class Approvals {
-  approvals = [
-    {
-      id: 'PR-001',
-      title: 'Тонер HP 26A',
-      status: 'Чакаща',
-      description: 'Свършващи наличности — остават 3 бр.',
-      quantity: 50,
-      user: 'Иван Петров',
-      date: '14.03.2026',
-      confidence: 95,
-      aiText: 'Препоръчвам одобрение...',
-      supplier: 'TechParts BG',
-      price: 625
-    },
-    {
-      id: 'PR-004',
-      title: 'Батерии AA',
-      status: 'Чакаща',
-      description: 'Нисък склад — останали 8 кутии',
-      quantity: 60,
-      user: 'Мария Иванова',
-      date: '15.03.2026',
-      confidence: 72,
-      aiText: 'Одобрение с резерва...',
-      supplier: 'BG Office Pro',
-      price: 180
-    }
-  ];
+export class Approvals implements OnInit {
+  approvals: PurchaseRequest[] = [];
 
-  approve(item: any) {
-    console.log('Approved:', item);
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit() { this.loadPending(); }
+
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
   }
 
-  reject(item: any) {
-    console.log('Rejected:', item);
+  loadPending() {
+    this.http.get<PurchaseRequest[]>('http://localhost:5090/api/requests', { headers: this.getHeaders() })
+      .subscribe({
+        next: (data) => {
+          this.approvals = data.filter(r => r.status === 'Pending');
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error loading requests:', err)
+      });
+  }
+
+  approve(item: PurchaseRequest) {
+    this.updateStatus(item, 'Approved');
+  }
+
+  reject(item: PurchaseRequest) {
+    this.updateStatus(item, 'Rejected');
+  }
+
+  private updateStatus(item: PurchaseRequest, status: string) {
+    this.http.patch(
+      `http://localhost:5090/api/requests/${item.requestId}/status`,
+      JSON.stringify(status),
+      { headers: this.getHeaders().set('Content-Type', 'application/json') }
+    ).subscribe({
+      next: () => {
+        this.approvals = this.approvals.filter(r => r.requestId !== item.requestId);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error updating status:', err)
+    });
   }
 }
