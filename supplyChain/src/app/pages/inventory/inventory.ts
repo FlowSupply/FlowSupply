@@ -41,6 +41,7 @@ export class Inventory implements OnInit, OnDestroy {
   private highlightTimer?: ReturnType<typeof setTimeout>;
   private readonly apiUrl = 'http://localhost:5090/api/products';
   private recentlyChangedProductIds = new Set<number>();
+  private hasLoadedBackendInventory = false;
   lastUpdatedAt = '';
   latestStockChange = '';
   apiErrorMessage = '';
@@ -184,9 +185,10 @@ export class Inventory implements OnInit, OnDestroy {
   private loadInventory() {
     this.http.get<ApiInventoryItem[]>(this.apiUrl, { headers: this.getHeaders() }).subscribe({
       next: (items) => {
-        const previousQuantities = new Map(
-          this.products.map((product) => [product.productId, product.productAvailability])
-        );
+        const shouldCompareStockChanges = this.hasLoadedBackendInventory;
+        const previousQuantities = shouldCompareStockChanges
+          ? new Map(this.products.map((product) => [product.productId, product.productAvailability]))
+          : new Map<number, number>();
         const changedProductIds = new Set<number>();
 
         this.products = items.map((item) => ({
@@ -201,19 +203,25 @@ export class Inventory implements OnInit, OnDestroy {
           supplierContactEmail: '',
           supplierContactPhone: '',
           supplierAddress: '',
-          lastConsumption: this.getLastConsumption(item, previousQuantities)
+          lastConsumption: shouldCompareStockChanges
+            ? this.getLastConsumption(item, previousQuantities)
+            : undefined
         }));
 
-        for (const product of this.products) {
-          const previousQuantity = previousQuantities.get(product.productId);
-          if (previousQuantity !== undefined && previousQuantity !== product.productAvailability) {
-            changedProductIds.add(product.productId);
+        if (shouldCompareStockChanges) {
+          for (const product of this.products) {
+            const previousQuantity = previousQuantities.get(product.productId);
+            if (previousQuantity !== undefined && previousQuantity !== product.productAvailability) {
+              changedProductIds.add(product.productId);
+            }
           }
         }
 
         this.recentlyChangedProductIds = changedProductIds;
+        this.hasLoadedBackendInventory = true;
         this.lastUpdatedAt = new Date().toLocaleTimeString('bg-BG');
         this.apiErrorMessage = '';
+        this.latestStockChange = '';
 
         if (changedProductIds.size > 0) {
           const changedProducts = this.products.filter((product) => changedProductIds.has(product.productId));
