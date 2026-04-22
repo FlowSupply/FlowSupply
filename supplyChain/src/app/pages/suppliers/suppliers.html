@@ -213,24 +213,84 @@
       <form #supplierForm="ngForm" (ngSubmit)="addSupplier()">
         <div class="form-group full-width">
           <label>Име на доставчик</label>
-          <input type="text" class="form-control" name="supplierName" [(ngModel)]="newSupplier.supplierName" required>
+          <input type="text" class="form-control"
+                 name="supplierName"
+                 [(ngModel)]="newSupplier.supplierName"
+                 #supplierName="ngModel"
+                 required minlength="2">
+          <span class="field-error" *ngIf="supplierName.invalid && supplierName.touched">
+            <ng-container *ngIf="supplierName.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="supplierName.errors?.['minlength']">Минимум 2 символа.</ng-container>
+          </span>
         </div>
+
         <div class="form-group">
           <label>Категория</label>
-          <input type="text" class="form-control" name="supplierCategory" [(ngModel)]="newSupplier.supplierCategory" required>
+          <input type="text" class="form-control"
+                 name="supplierCategory"
+                 [(ngModel)]="newSupplier.supplierCategory"
+                 #supplierCategory="ngModel"
+                 required minlength="2">
+          <span class="field-error" *ngIf="supplierCategory.invalid && supplierCategory.touched">
+            <ng-container *ngIf="supplierCategory.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="supplierCategory.errors?.['minlength']">Минимум 2 символа.</ng-container>
+          </span>
         </div>
+
         <div class="form-group">
           <label>Лице за контакт</label>
-          <input type="text" class="form-control" name="contactPerson" [(ngModel)]="newSupplier.supplierContactPerson" required>
+          <input type="text" class="form-control"
+                 name="contactPerson"
+                 [(ngModel)]="newSupplier.supplierContactPerson"
+                 #contactPerson="ngModel"
+                 required minlength="2">
+          <span class="field-error" *ngIf="contactPerson.invalid && contactPerson.touched">
+            <ng-container *ngIf="contactPerson.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="contactPerson.errors?.['minlength']">Минимум 2 символа.</ng-container>
+          </span>
         </div>
+
         <div class="form-group full-width">
           <label>Имейл за контакт</label>
-          <input type="email" class="form-control" name="contactEmail" [(ngModel)]="newSupplier.supplierContactEmail" required>
+          <input type="email" class="form-control"
+                 name="contactEmail"
+                 [(ngModel)]="newSupplier.supplierContactEmail"
+                 #contactEmail="ngModel"
+                 required
+                 pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$">
+          <span class="field-error" *ngIf="contactEmail.invalid && contactEmail.touched">
+            <ng-container *ngIf="contactEmail.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="contactEmail.errors?.['pattern'] || contactEmail.errors?.['email']">Въведете валиден имейл адрес.</ng-container>
+          </span>
         </div>
+
         <div class="form-group full-width">
           <label>Телефон за контакт</label>
-          <input type="text" class="form-control" name="contactPhone" [(ngModel)]="newSupplier.supplierContactPhone" required>
+          <input type="tel" class="form-control"
+                 name="contactPhone"
+                 [(ngModel)]="newSupplier.supplierContactPhone"
+                 #contactPhone="ngModel"
+                 required
+                 pattern="^[\+]?[\d\s\-\(\)]{7,15}$">
+          <span class="field-error" *ngIf="contactPhone.invalid && contactPhone.touched">
+            <ng-container *ngIf="contactPhone.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="contactPhone.errors?.['pattern']">Въведете валиден телефонен номер (7–15 цифри).</ng-container>
+          </span>
         </div>
+
+        <div class="form-group full-width">
+          <label>Адрес</label>
+          <input type="text" class="form-control"
+                 name="supplierAddress"
+                 [(ngModel)]="newSupplier.supplierAddress"
+                 #supplierAddress="ngModel"
+                 required minlength="5">
+          <span class="field-error" *ngIf="supplierAddress.invalid && supplierAddress.touched">
+            <ng-container *ngIf="supplierAddress.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="supplierAddress.errors?.['minlength']">Въведете пълен адрес (минимум 5 символа).</ng-container>
+          </span>
+        </div>
+
         <button class="submit-btn full-width" type="submit" [disabled]="supplierForm.invalid">
           Добави доставчик
         </button>

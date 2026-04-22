@@ -148,8 +148,9 @@
       <img class="avatar" src="favicon.ico">
 
       <div class="userInfo" *ngIf="!isCollapsed">
-        <p class="username">Kristiyan Vakov</p>
-        <p class="email">kristian.vakov@gmail.com</p>
+        <!-- Сменяме твърдия текст с променливите от TypeScript -->
+        <p class="username">{{ currentUserName }}</p>
+        <p class="email">{{ currentUserEmail }}</p>
       </div>
     </div>
 

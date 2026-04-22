@@ -210,3 +210,19 @@
         align-items: stretch;
     }
 }
+.priority-low    { background: #e5e7eb; color: #6b7280; }
+.priority-medium { background: #dbeafe; color: #1d4ed8; }
+.priority-high   { background: #fef3c7; color: #b45309; }
+.priority-urgent { background: #fee2e2; color: #dc2626; }
+
+.ai-pending { color: #9ca3af; font-style: italic; }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: #ccc;
+  font-size: 15px;
+}
