@@ -78,7 +78,6 @@ public class OrdersController : ControllerBase
 
     private async Task ApplyOrderStatus(Order order, string nextStatus)
     {
-        var previousStatus = order.Status;
         order.Status = nextStatus;
 
         switch (nextStatus)
@@ -117,7 +116,7 @@ public class OrdersController : ControllerBase
                 break;
         }
 
-        if (nextStatus == "Delivered" && previousStatus != "Delivered")
+        if (nextStatus == "Delivered" && !order.InventoryAppliedToStock)
         {
             var product = await _db.Products
                 .FirstOrDefaultAsync(p => p.ProductName == order.ProductName);
@@ -125,6 +124,7 @@ public class OrdersController : ControllerBase
             if (product != null)
             {
                 product.ProductAvailability += order.Quantity;
+                order.InventoryAppliedToStock = true;
             }
         }
     }

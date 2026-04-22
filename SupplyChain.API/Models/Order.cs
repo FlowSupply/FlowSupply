@@ -15,6 +15,7 @@ public class Order
     public DateTime? ShippedAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public DateTime? CancelledAt { get; set; }
+    public bool InventoryAppliedToStock { get; set; } = false;
 
     public Guid RequestId { get; set; } // връзка към заявката
 }
