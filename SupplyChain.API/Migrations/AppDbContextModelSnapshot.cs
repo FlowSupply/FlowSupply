@@ -40,9 +40,6 @@ namespace SupplyChain.API.Migrations
                     b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("InventoryAppliedToStock")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasColumnType("text");
