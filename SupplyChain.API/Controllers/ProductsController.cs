@@ -14,6 +14,7 @@ public class ProductsController : ControllerBase
     private readonly AppDbContext _db;
     public ProductsController(AppDbContext db) => _db = db;
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
         Ok(await _db.Products.OrderBy(p => p.ProductName).ToListAsync());

@@ -20,6 +20,24 @@
   margin: 0;
 }
 
+.live-sync {
+  color: #15803d !important;
+  font-weight: 700;
+  margin-top: 6px !important;
+}
+
+.latest-change {
+  color: #c2410c !important;
+  font-weight: 800;
+  margin-top: 6px !important;
+}
+
+.api-error {
+  color: #dc2626 !important;
+  font-weight: 700;
+  margin-top: 6px !important;
+}
+
 .btn-add {
   padding: 10px 20px;
   border: none;
@@ -110,6 +128,11 @@
   color: #ef4444;
 }
 
+.dark-icon {
+  background: #11182720;
+  color: #111827;
+}
+
 .stat-purple {
   background: linear-gradient(135deg, #985bb939, #fff);
 }
@@ -124,6 +147,10 @@
 
 .stat-red {
   background: linear-gradient(135deg, #ef444439, #fff);
+}
+
+.stat-dark {
+  background: linear-gradient(135deg, #11182726, #fff);
 }
 
 /* ===== SEARCH & FILTER ===== */
@@ -231,6 +258,11 @@ tbody tr:hover {
   transition: background-color 0.2s ease-in-out, border-left 0.2s ease-in-out;
 }
 
+tbody tr.stock-changed {
+  background: #fff7ed;
+  box-shadow: inset 4px 0 0 #f97316;
+}
+
 td {
   padding: 16px 20px;
   vertical-align: middle;
@@ -242,6 +274,11 @@ td {
 
 .text-muted {
   color: #6b7280;
+}
+
+.quantity-changed {
+  color: #c2410c;
+  font-weight: 800;
 }
 
 /* ===== PRODUCT CELL ===== */

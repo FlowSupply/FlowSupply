@@ -3,15 +3,26 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
+
+interface TimelineStep {
+  label: string;
+  date: string | null;
+  done: boolean;
+  cancelled?: boolean;
+}
+
 export interface Order {
   orderId: string;
   productName: string;
   quantity: number;
   supplierName: string;
-  status: string;
+  status: OrderStatus;
   createdAt: string;
+  confirmedAt: string | null;
   shippedAt: string | null;
   deliveredAt: string | null;
+  cancelledAt: string | null;
   requestId: string;
 }
 
@@ -24,6 +35,7 @@ export interface Order {
 export class Orders implements OnInit {
   orders: Order[] = [];
   searchTerm = '';
+  readonly statusOptions: OrderStatus[] = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
@@ -46,10 +58,19 @@ export class Orders implements OnInit {
   }
 
   advanceStatus(order: Order) {
-    if (order.status === 'Delivered') return;
-    this.http.patch(
-      `http://localhost:5090/api/orders/${order.orderId}/advance`,
-      {},
+    const nextStatus = order.status === 'Pending'
+      ? 'Confirmed'
+      : order.status === 'Confirmed'
+        ? 'Shipped'
+        : 'Delivered';
+
+    this.changeStatus(order, nextStatus);
+  }
+
+  changeStatus(order: Order, status: OrderStatus) {
+    this.http.patch<Order>(
+      `http://localhost:5090/api/orders/${order.orderId}/status`,
+      { status },
       { headers: this.getHeaders() }
     ).subscribe({
       next: (updated: any) => {
@@ -70,18 +91,52 @@ export class Orders implements OnInit {
     );
   }
 
-  // Build timeline steps from order data
-  getSteps(order: Order) {
+  getSteps(order: Order): TimelineStep[] {
+    const steps: TimelineStep[] = [
+      { label: 'Order created', date: order.createdAt, done: true },
+      {
+        label: 'Confirmed by supplier',
+        date: order.confirmedAt,
+        done: !!order.confirmedAt || !!order.shippedAt || !!order.deliveredAt ||
+          order.status === 'Confirmed' || order.status === 'Shipped' || order.status === 'Delivered'
+      },
+      {
+        label: 'Shipped',
+        date: order.shippedAt,
+        done: !!order.shippedAt || order.status === 'Shipped' || order.status === 'Delivered'
+      },
+      {
+        label: 'Delivered',
+        date: order.deliveredAt,
+        done: !!order.deliveredAt || order.status === 'Delivered'
+      }
+    ];
+
+    if (order.status !== 'Cancelled') {
+      return steps;
+    }
+
+    const lastDoneIndex = steps.reduce((lastIndex, step, index) => step.done ? index : lastIndex, 0);
+    const cancelledStep: TimelineStep = {
+      label: 'Cancelled',
+      date: order.cancelledAt,
+      done: true,
+      cancelled: true
+    };
+
     return [
-      { label: 'Order created',          date: order.createdAt,   done: true },
-      { label: 'Confirmed by supplier',  date: order.shippedAt,   done: order.status === 'Shipped' || order.status === 'Delivered' },
-      { label: 'Shipped',                date: order.shippedAt,   done: order.status === 'Shipped' || order.status === 'Delivered' },
-      { label: 'Delivered',              date: order.deliveredAt, done: order.status === 'Delivered' }
+      ...steps.slice(0, lastDoneIndex + 1),
+      cancelledStep,
+      ...steps.slice(lastDoneIndex + 1)
     ];
   }
 
   canAdvance(order: Order) {
-    return order.status !== 'Delivered';
+    return order.status !== 'Delivered' && order.status !== 'Cancelled';
+  }
+
+  getStatusLabel(status: OrderStatus): string {
+    return status;
   }
 
   formatDate(dateStr: string | null): string {
