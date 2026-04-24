@@ -135,6 +135,7 @@ getAreaPoints(values: number[], max: number, width: number, height: number): str
       .subscribe({
         next: (response) => {
           alert('Supply chain created successfully!');
+          localStorage.setItem('supplyChain', JSON.stringify(response));
           this.createForm = { name: '', industry: '', description: '', visibility: 'private' };
           this.closeModals();
         },
@@ -160,6 +161,7 @@ getAreaPoints(values: number[], max: number, width: number, height: number): str
       .subscribe({
         next: (response) => {
           alert('Successfully joined supply chain!');
+          localStorage.setItem('supplyChain', JSON.stringify(response));
           this.joinForm = { code: '', link: '' };
           this.closeModals();
         },

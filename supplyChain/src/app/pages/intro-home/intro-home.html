@@ -1,0 +1,199 @@
+<!-- ==================== INTRO PAGE ==================== -->
+<div class="intro-page">
+  <span class="badge">Supply Chain Intelligence</span>
+
+  <h1 class="headline">Your supply chain,<br><em>always in view</em></h1>
+
+  <p class="subline">Connect your supply chain, track orders, inventory, and deliveries in real time — all from a single dashboard.</p>
+
+  <div class="icons-row">
+    <div class="icon-chip">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zm-8 2a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"/></svg>
+      Orders
+    </div>
+    <div class="icon-chip">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      Inventory
+    </div>
+    <div class="icon-chip">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Deliveries
+    </div>
+    <div class="icon-chip">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Analytics
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Create chain
+    </button>
+    <button class="btn btn-secondary" (click)="openJoinModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Join chain
+    </button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-value">12k+</span>
+      <span class="stat-label">Orders tracked</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-value">98%</span>
+      <span class="stat-label">Uptime</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-value">340+</span>
+      <span class="stat-label">Suppliers connected</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== CREATE CHAIN MODAL ==================== -->
+<div class="modal-overlay" [class.modal-open]="isCreateModalOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-icon modal-icon--create">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      </div>
+      <div>
+        <h2 class="modal-title">Create a new chain</h2>
+        <p class="modal-subtitle">Set up your supply chain workspace</p>
+      </div>
+      <button class="modal-close" (click)="closeModals()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Chain name <span class="required">*</span></label>
+        <input class="form-input" type="text" placeholder="e.g. North Europe Logistics" [(ngModel)]="createForm.name" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <select class="form-input form-select" [(ngModel)]="createForm.industry">
+          <option value="" disabled selected>Select an industry</option>
+          <option value="retail">Retail</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="food">Food & Beverage</option>
+          <option value="pharma">Pharmaceuticals</option>
+          <option value="automotive">Automotive</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input form-textarea" placeholder="What does this supply chain manage?" [(ngModel)]="createForm.description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Visibility</label>
+        <div class="radio-group">
+          <label class="radio-option" [class.radio-selected]="createForm.visibility === 'private'">
+            <input type="radio" name="visibility" value="private" [(ngModel)]="createForm.visibility" />
+            <div class="radio-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <div>
+              <span class="radio-label">Private</span>
+              <span class="radio-desc">Invite only</span>
+            </div>
+          </label>
+          <label class="radio-option" [class.radio-selected]="createForm.visibility === 'public'">
+            <input type="radio" name="visibility" value="public" [(ngModel)]="createForm.visibility" />
+            <div class="radio-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <span class="radio-label">Public</span>
+              <span class="radio-desc">Anyone with link</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModals()">Cancel</button>
+      <button class="btn btn-primary" (click)="createChain()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+
+        Create chain
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ==================== JOIN CHAIN MODAL ==================== -->
+<div class="modal-overlay" [class.modal-open]="isJoinModalOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-icon modal-icon--join">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div>
+        <h2 class="modal-title">Join a chain</h2>
+        <p class="modal-subtitle">Enter an invite code or link</p>
+      </div>
+      <button class="modal-close" (click)="closeModals()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="join-tabs">
+        <button class="join-tab" [class.join-tab--active]="joinTab === 'code'" (click)="joinTab = 'code'">Invite code</button>
+        <button class="join-tab" [class.join-tab--active]="joinTab === 'link'" (click)="joinTab = 'link'">Invite link</button>
+      </div>
+
+      <div *ngIf="joinTab === 'code'" class="form-group">
+        <label class="form-label">Invite code <span class="required">*</span></label>
+        <div class="code-input-row">
+          <input class="form-input code-input" type="text" placeholder="e.g. XK9-4F2-TL7" [(ngModel)]="joinForm.code" maxlength="11" />
+        </div>
+        <span class="form-hint">Ask your chain admin for the invite code</span>
+      </div>
+
+      <div *ngIf="joinTab === 'link'" class="form-group">
+        <label class="form-label">Invite link <span class="required">*</span></label>
+        <input class="form-input" type="url" placeholder="e.g. https://flowsupply.com/join/..." [(ngModel)]="joinForm.link" />
+        <span class="form-hint">Paste the invitation link from your chain admin</span>
+      </div>
+
+      <div class="join-preview" *ngIf="joinForm.code || joinForm.link">
+        <div class="join-preview-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+        <div class="join-preview-text">
+          <span class="join-preview-label">Verifying {{joinTab}}...</span>
+          <span class="join-preview-sub">Chain details will appear here</span>
+        </div>
+        <div class="join-preview-spinner"></div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModals()">Cancel</button>
+      <button class="btn btn-primary btn-join" (click)="joinChain()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+        Join chain
+      </button>
+    </div>
+
+  </div>
+</div>

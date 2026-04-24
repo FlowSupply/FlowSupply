@@ -15,7 +15,7 @@ export class Sidenavbar implements OnInit {
   isSidebarOpen = false;         
   isCollapsed = false; 
 
-  // 3. Създай променливи за потребителя
+  // 3. Создай променливи за потребителя
   currentUserName: string = 'Guest';
   currentUserEmail: string = '';
 
