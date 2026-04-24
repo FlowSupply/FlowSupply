@@ -1,12 +1,20 @@
 {
+<<<<<<< Updated upstream
   "hash": "792ea11f",
   "configHash": "ac6035e5",
   "lockfileHash": "7ed8df2a",
   "browserHash": "2cf10b61",
+=======
+  "hash": "025f9a22",
+  "configHash": "ac6035e5",
+  "lockfileHash": "f84d16ff",
+  "browserHash": "ba87d305",
+>>>>>>> Stashed changes
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
+<<<<<<< Updated upstream
       "fileHash": "2ecfa921",
       "needsInterop": false
     },
@@ -14,36 +22,65 @@
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
       "fileHash": "ab237eee",
+=======
+      "fileHash": "e4afe89a",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
+<<<<<<< Updated upstream
       "fileHash": "331f169e",
+=======
+      "fileHash": "c2df13cc",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
+<<<<<<< Updated upstream
       "fileHash": "1f87af44",
+=======
+      "fileHash": "4bd09f00",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
+<<<<<<< Updated upstream
       "fileHash": "a687917c",
+=======
+      "fileHash": "30778671",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
+<<<<<<< Updated upstream
       "fileHash": "349ae107",
+=======
+      "fileHash": "fd8376bf",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "1f17173f",
+>>>>>>> Stashed changes
       "needsInterop": false
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
+<<<<<<< Updated upstream
       "fileHash": "059a5ba7",
+=======
+      "fileHash": "9df68bdc",
+>>>>>>> Stashed changes
       "needsInterop": false
     }
   },
