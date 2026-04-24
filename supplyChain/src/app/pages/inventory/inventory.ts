@@ -46,6 +46,21 @@ export class Inventory implements OnInit, OnDestroy {
   latestStockChange = '';
   apiErrorMessage = '';
 
+  searchTerm = '';
+  showFilterModal = false;
+  filters = {
+    category: '',
+    status: '' as ProductStatus | '',
+    minAvailability: null as number | null,
+    maxAvailability: null as number | null
+  };
+  activeFilters = {
+    category: '',
+    status: '' as ProductStatus | '',
+    minAvailability: null as number | null,
+    maxAvailability: null as number | null
+  };
+
   products: InventoryProduct[] = [
     {productId: 1, productName: 'USB Cables Type-C', productSCU: 'USB-C-001', productCategory: 'Electronics', productAvailability: 62, productMinimum: 20, productStatus: 'Optimal', supplierContactPerson: 'John Doe', supplierContactEmail: 'jD0eI@example.com', supplierContactPhone: '123-456-7890', supplierAddress: '123 Main St, City, Country'},
     {productId: 2, productName: 'HP Toner 26A', productSCU: 'TON-26A', productCategory: 'Office Supplies', productAvailability: 60, productMinimum: 50, productStatus: 'Optimal', supplierContactPerson: 'John Doe1', supplierContactEmail: 'jD0eI@example.com1', supplierContactPhone: '123-456-7891', supplierAddress: '124 Main St, City, Country'},
@@ -182,6 +197,84 @@ export class Inventory implements OnInit, OnDestroy {
 
   get inStockCount(): number {
     return this.products.filter(p => ['Optimal', 'Overstock'].includes(this.compareAvailabilityToMinimum(p))).length;
+  }
+
+  get filteredProducts() {
+    let filtered = this.products;
+
+    // Search filter
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.productName.toLowerCase().includes(term) ||
+        p.productSCU.toLowerCase().includes(term) ||
+        p.productCategory.toLowerCase().includes(term)
+      );
+    }
+
+    // Category filter
+    if (this.activeFilters.category) {
+      filtered = filtered.filter(p => p.productCategory === this.activeFilters.category);
+    }
+
+    // Status filter
+    if (this.activeFilters.status) {
+      filtered = filtered.filter(p => p.productStatus === this.activeFilters.status);
+    }
+
+    // Availability range filter
+    if (this.activeFilters.minAvailability !== null) {
+      filtered = filtered.filter(p => p.productAvailability >= this.activeFilters.minAvailability!);
+    }
+    if (this.activeFilters.maxAvailability !== null) {
+      filtered = filtered.filter(p => p.productAvailability <= this.activeFilters.maxAvailability!);
+    }
+
+    return filtered;
+  }
+
+  get uniqueCategories() {
+    return [...new Set(this.products.map(p => p.productCategory))];
+  }
+
+  get uniqueStatuses() {
+    return [...new Set(this.products.map(p => p.productStatus))];
+  }
+
+  openFilterModal() {
+    this.showFilterModal = true;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  closeFilterModal() {
+    this.showFilterModal = false;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  applyFilters() {
+    this.activeFilters = {
+      category: this.filters.category,
+      status: this.filters.status,
+      minAvailability: this.filters.minAvailability,
+      maxAvailability: this.filters.maxAvailability
+    };
+    this.closeFilterModal();
+  }
+
+  clearFilters() {
+    this.filters = {
+      category: '',
+      status: '',
+      minAvailability: null,
+      maxAvailability: null
+    };
+    this.activeFilters = {
+      category: '',
+      status: '',
+      minAvailability: null,
+      maxAvailability: null
+    };
+    this.changeDetectorRef.detectChanges();
   }
 
   private loadInventory() {

@@ -61,8 +61,8 @@
 
   <!-- Search & Filter -->
   <div class="conatiner-fluid searchFilter mt-4 mb-3">
-      <input class="form-control" type="text" placeholder="Search products..." aria-label="Search">
-      <button class="filterBtn">
+      <input class="form-control" type="text" placeholder="Search suppliers..." aria-label="Search" [(ngModel)]="searchTerm">
+      <button class="filterBtn" (click)="openFilterModal()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
               <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
           </svg> Filters
@@ -86,7 +86,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let supplier of suppliers">
+          <tr *ngFor="let supplier of filteredSuppliers">
           <!-- Avatar + Name + ID -->
           <td class="supplier-cell d-flex align-items-center justify-content-start gap-3">
             <div class="supplier-avatar">{{ supplier.supplierName[0] }}</div>
@@ -195,6 +195,60 @@
             </div>
           </div>
         </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div class="modal-overlay" [class.active]="showFilterModal" (click)="closeFilterModal()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Filter Suppliers</h2>
+          <p class="modal-subtitle">Select filters to apply</p>
+        </div>
+        <button class="btn-close" (click)="closeFilterModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <div class="select-wrapper">
+              <select class="form-select" [(ngModel)]="filters.category">
+                <option value="">All Categories</option>
+                <option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum Rating</label>
+            <div class="select-wrapper">
+              <select class="form-select" [(ngModel)]="filters.rating">
+                <option value="">Any Rating</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div class="select-wrapper">
+              <select class="form-select" [(ngModel)]="filters.status">
+                <option value="">All Statuses</option>
+                <option *ngFor="let status of uniqueStatuses" [value]="status">{{ status }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-submit" (click)="applyFilters()">Apply Filters</button>
+        <button class="btn-cancel" (click)="clearFilters()">Clear Filters</button>
       </div>
     </div>
   </div>

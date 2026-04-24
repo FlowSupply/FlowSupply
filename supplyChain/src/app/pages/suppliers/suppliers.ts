@@ -13,6 +13,19 @@ export class Suppliers implements OnInit {
   // Вече е празен масив, ще се пълни от PostgreSQL
   suppliers: any[] =[];
 
+  searchTerm = '';
+  showFilterModal = false;
+  filters = {
+    category: '',
+    rating: '',
+    status: ''
+  };
+  activeFilters = {
+    category: '',
+    rating: '',
+    status: ''
+  };
+
   newSupplier: any = {
     supplierName: '',
     supplierCategory: '',
@@ -30,6 +43,77 @@ export class Suppliers implements OnInit {
   // Тази функция се извиква автоматично, когато страницата се зареди
   ngOnInit() {
     this.loadSuppliers();
+  }
+
+  get filteredSuppliers() {
+    let filtered = this.suppliers;
+
+    // Search filter
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.supplierName.toLowerCase().includes(term) ||
+        s.supplierCategory.toLowerCase().includes(term)
+      );
+    }
+
+    // Category filter
+    if (this.activeFilters.category) {
+      filtered = filtered.filter(s => s.supplierCategory === this.activeFilters.category);
+    }
+
+    // Rating filter
+    if (this.activeFilters.rating) {
+      filtered = filtered.filter(s => s.supplierRating.toString() === this.activeFilters.rating);
+    }
+
+    // Status filter
+    if (this.activeFilters.status) {
+      filtered = filtered.filter(s => s.supplierStatus === this.activeFilters.status);
+    }
+
+    return filtered;
+  }
+
+  get uniqueCategories() {
+    return [...new Set(this.suppliers.map(s => s.supplierCategory))];
+  }
+
+  get uniqueStatuses() {
+    return [...new Set(this.suppliers.map(s => s.supplierStatus))];
+  }
+
+  openFilterModal() {
+    this.showFilterModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeFilterModal() {
+    this.showFilterModal = false;
+    this.cdr.detectChanges();
+  }
+
+  applyFilters() {
+    this.activeFilters = {
+      category: this.filters.category,
+      rating: this.filters.rating,
+      status: this.filters.status
+    };
+    this.closeFilterModal();
+  }
+
+  clearFilters() {
+    this.filters = {
+      category: '',
+      rating: '',
+      status: ''
+    };
+    this.activeFilters = {
+      category: '',
+      rating: '',
+      status: ''
+    };
+    this.cdr.detectChanges();
   }
 
   // Помощна функция за вземане на токена

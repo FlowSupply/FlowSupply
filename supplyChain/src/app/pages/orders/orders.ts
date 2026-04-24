@@ -35,6 +35,13 @@ export interface Order {
 export class Orders implements OnInit {
   orders: Order[] = [];
   searchTerm = '';
+  showFilterModal = false;
+  filters = {
+    status: '' as OrderStatus | ''
+  };
+  activeFilters = {
+    status: '' as OrderStatus | ''
+  };
   readonly statusOptions: OrderStatus[] = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
@@ -83,12 +90,23 @@ export class Orders implements OnInit {
   }
 
   get filteredOrders() {
-    if (!this.searchTerm) return this.orders;
-    const term = this.searchTerm.toLowerCase();
-    return this.orders.filter(o =>
-      o.productName.toLowerCase().includes(term) ||
-      o.supplierName.toLowerCase().includes(term)
-    );
+    let filtered = this.orders;
+
+    // Search filter
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(o =>
+        o.productName.toLowerCase().includes(term) ||
+        o.supplierName.toLowerCase().includes(term)
+      );
+    }
+
+    // Status filter
+    if (this.activeFilters.status) {
+      filtered = filtered.filter(o => o.status === this.activeFilters.status);
+    }
+
+    return filtered;
   }
 
   getSteps(order: Order): TimelineStep[] {
@@ -142,5 +160,32 @@ export class Orders implements OnInit {
   formatDate(dateStr: string | null): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-GB');
+  }
+
+  openFilterModal() {
+    this.showFilterModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeFilterModal() {
+    this.showFilterModal = false;
+    this.cdr.detectChanges();
+  }
+
+  applyFilters() {
+    this.activeFilters = {
+      status: this.filters.status
+    };
+    this.closeFilterModal();
+  }
+
+  clearFilters() {
+    this.filters = {
+      status: ''
+    };
+    this.activeFilters = {
+      status: ''
+    };
+    this.cdr.detectChanges();
   }
 }

@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css',
+  styleUrls: ['./dashboard.css'],
 })
 export class Dashboard implements OnInit {
 
@@ -17,6 +20,12 @@ export class Dashboard implements OnInit {
   stockTrend = [435, 330, 437, 325, 318, 325, 320];
   weekDays: string[] = [];
   stockScaleSteps: number[] = [];
+
+  isCreateModalOpen = false;
+  isJoinModalOpen = false;
+  joinTab: 'code' | 'link' = 'code';
+  createForm = { name: '', industry: '', description: '', visibility: 'private' };
+  joinForm = { code: '', link: '' };
 
   lowStockItems = [
     { name: 'USB Cables (Type-C)', current: 12, min: 50 },
@@ -30,6 +39,8 @@ export class Dashboard implements OnInit {
     { days: 5, name: 'Printer heads', supplier: 'OfficeMax',    order: '#ORD-2038' },
     { days: 2, name: 'Cable connections',  supplier: 'ElektroSupply',order: '#ORD-2035' },
   ];
+
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
     this.months = this.getLastSixMonths();
@@ -90,5 +101,72 @@ getAreaPoints(values: number[], max: number, width: number, height: number): str
 
   getLowStockPercent(current: number, min: number): number {
     return Math.min((current / min) * 100, 100);
+  }
+
+  openCreateModal() { 
+    console.log('openCreateModal called');
+    this.isCreateModalOpen = true; 
+  }
+  openJoinModal() { 
+    console.log('openJoinModal called');
+    this.isJoinModalOpen = true; 
+  }
+  closeModals()     { this.isCreateModalOpen = false; this.isJoinModalOpen = false; }
+
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  }
+
+  createChain() {
+    if (!this.createForm.name.trim()) {
+      alert('Chain name is required');
+      return;
+    }
+
+    const payload = {
+      name: this.createForm.name,
+      industry: this.createForm.industry,
+      description: this.createForm.description,
+      visibility: this.createForm.visibility
+    };
+
+    this.http.post('http://localhost:5090/api/chains', payload, { headers: this.getHeaders() })
+      .subscribe({
+        next: (response) => {
+          alert('Supply chain created successfully!');
+          this.createForm = { name: '', industry: '', description: '', visibility: 'private' };
+          this.closeModals();
+        },
+        error: (err) => {
+          console.error('Error creating chain:', err);
+          alert('Failed to create supply chain. Please try again.');
+        }
+      });
+  }
+
+  joinChain() {
+    const code = this.joinTab === 'code' ? this.joinForm.code : this.joinForm.link;
+    if (!code.trim()) {
+      alert('Please enter an invite code or link');
+      return;
+    }
+
+    const payload = {
+      [this.joinTab === 'code' ? 'code' : 'link']: code
+    };
+
+    this.http.post('http://localhost:5090/api/chains/join', payload, { headers: this.getHeaders() })
+      .subscribe({
+        next: (response) => {
+          alert('Successfully joined supply chain!');
+          this.joinForm = { code: '', link: '' };
+          this.closeModals();
+        },
+        error: (err) => {
+          console.error('Error joining chain:', err);
+          alert('Failed to join supply chain. Please check your code and try again.');
+        }
+      });
   }
 }
