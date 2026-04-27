@@ -1,0 +1,160 @@
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeCreateRequestModal()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">New purchase request</h2>
+        <p class="modal-subtitle">Fill in the details for the request</p>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <input class="form-input"
+                 type="text"
+                 placeholder="Enter product name"
+                 [(ngModel)]="newRequest.productName"
+                 name="productName"
+                 required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-input"
+                 type="number"
+                 placeholder="Enter quantity"
+                 [(ngModel)]="newRequest.quantity"
+                 name="quantity"
+                 min="1"
+                 required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <div class="select-wrapper">
+            <select class="form-select" [(ngModel)]="newRequest.priority" name="priority">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reason</label>
+        <textarea class="form-textarea"
+                  placeholder="Describe why this request is needed..."
+                  [(ngModel)]="newRequest.reason"
+                  name="reason"
+                  rows="4"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-submit"
+              (click)="submitRequest()"
+              [disabled]="!newRequest.productName || newRequest.quantity < 1">
+        Submit Request
+      </button>
+      <button class="btn-cancel" (click)="closeCreateRequestModal()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="intro">
+    <div class="title">
+      <h1>Purchase requests</h1>
+      <p>Create and check purchase requests</p>
+    </div>
+    <button class="btn-add" (click)="openCreateRequestModal()">+ New Request</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-purple">
+      <div class="stat-icon purple-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">TOTAL REQUESTS</span>
+        <span class="stat-value">{{ totalCount }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-yellow">
+      <div class="stat-icon yellow-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">PENDING</span>
+        <span class="stat-value">{{ pendingCount }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-green">
+      <div class="stat-icon green-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">APPROVED</span>
+        <span class="stat-value">{{ approvedCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid suppliersTable">
+    <p class="table-scroll-hint">← swipe to see more →</p>
+    <div class="table-scroll-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Priority</th>
+            <th>Reason</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of requests">
+            <td style="font-weight: 600; color: #111827;">{{ r.productName }}</td>
+            <td style="font-weight: bold; color: black;">{{ r.quantity }}</td>
+            <td>
+              <span class="priority-badge"
+                    [ngClass]="{
+                      'priority-low':    r.priority === 'Low',
+                      'priority-medium': r.priority === 'Medium',
+                      'priority-high':   r.priority === 'High',
+                      'priority-urgent': r.priority === 'Urgent'
+                    }">
+                {{ r.priority }}
+              </span>
+            </td>
+            <td><span style="color: #6e6e6e;">{{ r.reason }}</span></td>
+            <td style="color: #6e6e6e;">{{ r.date }}</td>
+            <td>
+              <span class="status-badge"
+                    [ngClass]="{
+                      'status-pending':  r.status === 'Pending',
+                      'status-approved': r.status === 'Approved',
+                      'status-rejected': r.status === 'Rejected'
+                    }">
+                {{ r.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

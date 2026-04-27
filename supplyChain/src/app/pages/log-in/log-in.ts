@@ -35,7 +35,15 @@ export class LogIn {
     }
 
     this.authService.login(this.email, this.password).subscribe({
-      next: () => {
+      next: (response: any) => {
+        if (response) {
+          // ТУК БЕШЕ ПРОПУСКЪТ! Трябва да запазим токена:
+          localStorage.setItem('token', response.token); 
+          
+          // Запазваме и другите неща
+          localStorage.setItem('fullName', response.fullName);
+          localStorage.setItem('email', response.email);
+        }
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

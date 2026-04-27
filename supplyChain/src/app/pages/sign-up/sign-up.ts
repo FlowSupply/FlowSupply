@@ -51,11 +51,18 @@ export class SignUp {
     const fullName = `${this.firstName} ${this.lastName}`.trim();
 
     this.authService.register(fullName, this.email, this.password).subscribe({
-      next: () => {
+      next: (response: any) => {
+        if (response) {
+          // ЗАПАЗВАМЕ ТОКЕНА И ТУК!
+          localStorage.setItem('token', response.token); 
+          localStorage.setItem('fullName', response.fullName);
+          localStorage.setItem('email', response.email);
+        }
+        // Пренасочваме директно към Dashboard-а
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.errorMessage = err.error || 'Sign up failed.';
+        this.errorMessage = err.error || 'Възникна грешка при регистрация.';
       }
     });
   }

@@ -1,1 +1,355 @@
-<p>suppliers works!</p>
+<div class="page">
+
+  <!-- Header -->
+  <div class="intro">
+    <div class="title">
+      <h1>Suppliers</h1>
+      <p>Management of partners and ratings</p>
+    </div>
+    <button class="btn-add" (click)="openAddSupplierModal()">+ New Supplier</button>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stats-row">
+    <div class="stat-card stat-purple">
+      <div class="stat-icon purple-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">TOTAL SUPPLIERS</span>
+        <span class="stat-value">{{ suppliers.length }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-green">
+      <div class="stat-icon green-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-4 h-4"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">ACTIVE</span>
+        <span class="stat-value">{{ activeCount }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-pink">
+      <div class="stat-icon pink-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">AVERAGE RATING</span>
+        <span class="stat-value">{{ avgRating }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-yellow">
+      <div class="stat-icon yellow-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+          <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">AVERAGE DELAY</span>
+        <span class="stat-value">{{ avgLatency }} <small>days</small></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="conatiner-fluid searchFilter mt-4 mb-3">
+      <input class="form-control" type="text" placeholder="Search suppliers..." aria-label="Search" [(ngModel)]="searchTerm">
+      <button class="filterBtn" (click)="openFilterModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
+              <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
+          </svg> Filters
+      </button>
+  </div>
+
+  <!-- Table -->
+  <div class="suppliersTable">
+    <p class="table-scroll-hint">← swipe to see more →</p>
+    <div class="table-scroll-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>SUPPLIER</th>
+            <th>CATEGORY</th>
+            <th>RATING</th>
+            <th>SUPPLIES</th>
+            <th>AVG. DELAY</th>
+            <th>STATUS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let supplier of filteredSuppliers">
+          <!-- Avatar + Name + ID -->
+          <td class="supplier-cell d-flex align-items-center justify-content-start gap-3">
+            <div class="supplier-avatar">{{ supplier.supplierName[0] }}</div>
+            <div class="supplier-meta">
+              <span class="supplier-name">{{ supplier.supplierName }}</span>
+              <span class="supplier-id">#{{ supplier.supplierId }}</span>
+            </div>
+          </td>
+
+          <!-- Category -->
+          <td class="text-muted">{{ supplier.supplierCategory }}</td>
+
+          <!-- Star Rating -->
+          <td class="rating-cell">
+            <span class="rating-number d-block">{{ supplier.supplierRating }}</span>
+            <span class="stars p-2">
+              <ng-container *ngFor="let star of [1,2,3,4,5]">
+                <svg [class]="star <= +supplier.supplierRating ? 'star-filled' : 'star-empty'"
+                     xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>
+              </ng-container>
+            </span>
+          </td>
+
+          <!-- Supplies with trend arrow -->
+          <td class="supplies-cell">
+            <strong>{{ supplier.supplierSupplies }}</strong>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right trend-arrow" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+            </svg>
+          </td>
+
+          <!-- Latency -->
+          <td class="latency-cell">
+            <span [ngStyle]="{ color: +supplier.supplierAvrLatency < 1 ? '#4CAF50' : '#ef4444' }">
+              {{ supplier.supplierAvrLatency }} дни
+            </span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-badge"
+                  [ngClass]="supplier.supplierStatus === 'Active' ? 'status-active' : 'status-inactive'">
+              {{ supplier.supplierStatus === 'Active' ? 'Активен' : 'Неактивен' }}
+            </span>
+          </td>
+
+          <!-- Details button -->
+          <td>
+            <button type="button" (click)="openDetails(supplier)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+              </svg> 
+              Детайли
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Details Overlay -->
+  <div class="details-overlay">
+    <div class="details-box">
+      <div class="details-header">
+        <h3>Детайли за доставчик</h3>
+        <button type="button" class="btn-cancel" (click)="closeDetails()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="details-content" *ngIf="selectedSupplier">
+        <p><strong>Доставчик:</strong> {{ selectedSupplier.supplierName }}</p>
+        <p><strong>Категория:</strong> {{ selectedSupplier.supplierCategory }}</p>
+        <section class="companyInfo">
+          <h5>Контакти:</h5>
+          <div class="contactRow">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+            </svg>
+            <div>
+              <span class="label">Телефон</span>
+              <span class="value">{{ selectedSupplier.supplierContactPhone }}</span>
+            </div>
+          </div>
+          <div class="contactRow">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+            </svg>
+            <div>
+              <span class="label">Имейл</span>
+              <span class="value">{{ selectedSupplier.supplierContactEmail }}</span>
+            </div>
+          </div>
+          <div class="contactRow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <div>
+              <span class="label">Адрес</span>
+              <span class="value">{{ selectedSupplier.supplierAddress }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div class="modal-overlay" [class.active]="showFilterModal" (click)="closeFilterModal()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Filter Suppliers</h2>
+          <p class="modal-subtitle">Select filters to apply</p>
+        </div>
+        <button class="btn-close" (click)="closeFilterModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <div class="select-wrapper">
+              <select class="form-select" [(ngModel)]="filters.category">
+                <option value="">All Categories</option>
+                <option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum Rating</label>
+            <div class="select-wrapper">
+              <select class="form-select" [(ngModel)]="filters.rating">
+                <option value="">Any Rating</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div class="select-wrapper">
+              <select class="form-select" [(ngModel)]="filters.status">
+                <option value="">All Statuses</option>
+                <option *ngFor="let status of uniqueStatuses" [value]="status">{{ status }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-submit" (click)="applyFilters()">Apply Filters</button>
+        <button class="btn-cancel" (click)="clearFilters()">Clear Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Supplier Overlay -->
+  <div class="addSupplier-overlay">
+    <div class="addSupplier-box">
+      <div class="addSupplier-header">
+        <h3>Добави нов доставчик</h3>
+        <button type="button" class="btn-cancel" (click)="closeAddSupplierModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+          </svg>
+        </button>
+      </div>
+      <form #supplierForm="ngForm" (ngSubmit)="addSupplier()">
+        <div class="form-group full-width">
+          <label>Име на доставчик</label>
+          <input type="text" class="form-control"
+                 name="supplierName"
+                 [(ngModel)]="newSupplier.supplierName"
+                 #supplierName="ngModel"
+                 required minlength="2">
+          <span class="field-error" *ngIf="supplierName.invalid && supplierName.touched">
+            <ng-container *ngIf="supplierName.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="supplierName.errors?.['minlength']">Минимум 2 символа.</ng-container>
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Категория</label>
+          <input type="text" class="form-control"
+                 name="supplierCategory"
+                 [(ngModel)]="newSupplier.supplierCategory"
+                 #supplierCategory="ngModel"
+                 required minlength="2">
+          <span class="field-error" *ngIf="supplierCategory.invalid && supplierCategory.touched">
+            <ng-container *ngIf="supplierCategory.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="supplierCategory.errors?.['minlength']">Минимум 2 символа.</ng-container>
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Лице за контакт</label>
+          <input type="text" class="form-control"
+                 name="contactPerson"
+                 [(ngModel)]="newSupplier.supplierContactPerson"
+                 #contactPerson="ngModel"
+                 required minlength="2">
+          <span class="field-error" *ngIf="contactPerson.invalid && contactPerson.touched">
+            <ng-container *ngIf="contactPerson.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="contactPerson.errors?.['minlength']">Минимум 2 символа.</ng-container>
+          </span>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Имейл за контакт</label>
+          <input type="email" class="form-control"
+                 name="contactEmail"
+                 [(ngModel)]="newSupplier.supplierContactEmail"
+                 #contactEmail="ngModel"
+                 required
+                 pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$">
+          <span class="field-error" *ngIf="contactEmail.invalid && contactEmail.touched">
+            <ng-container *ngIf="contactEmail.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="contactEmail.errors?.['pattern'] || contactEmail.errors?.['email']">Въведете валиден имейл адрес.</ng-container>
+          </span>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Телефон за контакт</label>
+          <input type="tel" class="form-control"
+                 name="contactPhone"
+                 [(ngModel)]="newSupplier.supplierContactPhone"
+                 #contactPhone="ngModel"
+                 required
+                 pattern="^[\+]?[\d\s\-\(\)]{7,15}$">
+          <span class="field-error" *ngIf="contactPhone.invalid && contactPhone.touched">
+            <ng-container *ngIf="contactPhone.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="contactPhone.errors?.['pattern']">Въведете валиден телефонен номер (7–15 цифри).</ng-container>
+          </span>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Адрес</label>
+          <input type="text" class="form-control"
+                 name="supplierAddress"
+                 [(ngModel)]="newSupplier.supplierAddress"
+                 #supplierAddress="ngModel"
+                 required minlength="5">
+          <span class="field-error" *ngIf="supplierAddress.invalid && supplierAddress.touched">
+            <ng-container *ngIf="supplierAddress.errors?.['required']">Полето е задължително.</ng-container>
+            <ng-container *ngIf="supplierAddress.errors?.['minlength']">Въведете пълен адрес (минимум 5 символа).</ng-container>
+          </span>
+        </div>
+
+        <button class="submit-btn full-width" type="submit" [disabled]="supplierForm.invalid">
+          Добави доставчик
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
