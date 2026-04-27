@@ -23,10 +23,16 @@ export class Sidenavbar implements OnInit {
 
   // 4. Добави тази функция, която се изпълнява при зареждане
   ngOnInit() {
-    this.currentUserName = localStorage.getItem('fullName') || 'Guest';
-    this.currentUserEmail = localStorage.getItem('email') || '';
-  }
-
+  this.currentUserName  = localStorage.getItem('fullName') || 'Guest';
+  this.currentUserEmail = localStorage.getItem('email') || '';
+  this.currentRole      = localStorage.getItem('role') || 'Employee';
+}
+currentRole: string = 'Employee';
+ 
+// Helpers за template-а:
+get isAdmin()      { return ['Admin','SuperAdmin'].includes(this.currentRole); }
+get isSuperAdmin() { return this.currentRole === 'SuperAdmin'; }
+ 
   setActive(link: string) {
     this.activeLink = link;
   }
@@ -42,4 +48,13 @@ export class Sidenavbar implements OnInit {
   toggleCollapse() {
     this.isCollapsed = !this.isCollapsed;
   }
+  
+
+  logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('fullName');
+  localStorage.removeItem('email');
+  this.router.navigate(['/login']);
+}
+
 }

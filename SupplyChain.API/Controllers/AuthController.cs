@@ -52,12 +52,14 @@ public class AuthController : ControllerBase
 
         var token = _tokenService.CreateToken(user);
 
+        
         return Ok(new AuthResponse
         {
-            Token = token,
-            Email = user.Email,
-            Role = user.Role,
-            FullName = user.FullName
+            Token    = token,
+            FullName = user.FullName,
+            Email    = user.Email,
+            Role     = user.Role,
+            SupplyChainId = user.SupplyChainId?.ToString()
         });
     }
 
@@ -85,25 +87,29 @@ public class AuthController : ControllerBase
             Token = token,
             Email = user.Email,
             Role = user.Role,
-            FullName = user.FullName
+            FullName = user.FullName,
+            SupplyChainId = user.SupplyChainId?.ToString()
         });
     }
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult GetMe()
+    public async Task<ActionResult> GetMe()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var fullName = User.FindFirstValue(ClaimTypes.Name);
         var email = User.FindFirstValue(ClaimTypes.Email);
         var role = User.FindFirstValue(ClaimTypes.Role);
 
-        return Ok(new
+        var user = await _context.Users.FindAsync(int.Parse(userId!));
+
+        return Ok(new AuthResponse
         {
-            Id = userId,
-            FullName = fullName,
-            Email = email,
-            Role = role
+            Token    = "",
+            Email    = email!,
+            Role     = role!,
+            FullName = fullName!,
+            SupplyChainId = user?.SupplyChainId?.ToString()
         });
     }
 }

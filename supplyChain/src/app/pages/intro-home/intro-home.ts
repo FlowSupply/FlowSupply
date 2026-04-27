@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-intro-home',
@@ -10,93 +11,62 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   templateUrl: './intro-home.html',
   styleUrls: ['./intro-home.css'],
 })
-export class IntroHome implements OnInit {
-  private http = inject(HttpClient);
+export class IntroHome {
+  private http   = inject(HttpClient);
+  private router = inject(Router);
 
   isCreateModalOpen = false;
-  isJoinModalOpen = false;
+  isJoinModalOpen   = false;
   joinTab: 'code' | 'link' = 'code';
+
   createForm = { name: '', industry: '', description: '', visibility: 'private' };
-  joinForm = { code: '', link: '' };
+  joinForm   = { code: '', link: '' };
 
-  ngOnInit() {}
-
-  openCreateModal() {
-    this.isCreateModalOpen = true;
-  }
-
-  closeCreateModal() {
-    this.isCreateModalOpen = false;
-    this.createForm = { name: '', industry: '', description: '', visibility: 'private' };
-  }
-
-  openJoinModal() {
-    this.isJoinModalOpen = true;
-  }
-
-  closeJoinModal() {
-    this.isJoinModalOpen = false;
-    this.joinForm = { code: '', link: '' };
-  }
+  openCreateModal() { this.isCreateModalOpen = true; }
+  openJoinModal()   { this.isJoinModalOpen   = true; }
 
   closeModals() {
     this.isCreateModalOpen = false;
-    this.isJoinModalOpen = false;
+    this.isJoinModalOpen   = false;
+    this.createForm = { name: '', industry: '', description: '', visibility: 'private' };
+    this.joinForm   = { code: '', link: '' };
   }
 
   private getHeaders() {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` });
+  }
+
+  private saveAndNavigate(response: any, role: string) {
+    localStorage.setItem('supplyChainId', response.id);
+    localStorage.setItem('supplyChainName', response.name);
+    localStorage.setItem('role', role);
+    this.router.navigate(['/dashboard']);
   }
 
   createChain() {
-    if (!this.createForm.name.trim()) {
-      alert('Chain name is required');
-      return;
-    }
+    if (!this.createForm.name.trim()) { alert('Chain name is required'); return; }
 
-    const payload = {
-      name: this.createForm.name,
-      industry: this.createForm.industry,
-      description: this.createForm.description,
-      visibility: this.createForm.visibility
-    };
-
-    this.http.post('http://localhost:5090/api/chains', payload, { headers: this.getHeaders() })
+    this.http.post<any>('http://localhost:5090/api/chains', this.createForm, { headers: this.getHeaders() })
       .subscribe({
-        next: (response) => {
-          alert('Supply chain created successfully!');
-          localStorage.setItem('supplyChain', JSON.stringify(response));
-          window.location.href = '/dashboard';
-        },
-        error: (err) => {
-          console.error('Error creating chain:', err);
-          alert('Failed to create supply chain. Please try again.');
-        }
+        next: (res) => this.saveAndNavigate(res, res.role),
+        error: (err) => { console.error(err); alert('Failed to create chain.'); }
       });
   }
 
   joinChain() {
-    const code = this.joinTab === 'code' ? this.joinForm.code : this.joinForm.link;
-    if (!code.trim()) {
-      alert(`Chain ${this.joinTab === 'code' ? 'code' : 'link'} is required`);
-      return;
-    }
+    const payload = this.joinTab === 'code'
+      ? { code: this.joinForm.code }
+      : { link: this.joinForm.link };
 
-    const payload = this.joinTab === 'code' 
-      ? { code }
-      : { link: code };
+    const value = this.joinTab === 'code' ? this.joinForm.code : this.joinForm.link;
+    if (!value.trim()) { alert(`${this.joinTab === 'code' ? 'Code' : 'Link'} is required`); return; }
 
-    this.http.post('http://localhost:5090/api/chains/join', payload, { headers: this.getHeaders() })
+    this.http.post<any>('http://localhost:5090/api/chains/join', payload, { headers: this.getHeaders() })
       .subscribe({
-        next: (response) => {
-          alert('Successfully joined supply chain!');
-          localStorage.setItem('supplyChain', JSON.stringify(response));
-          window.location.href = '/dashboard';
-        },
+        next: (res) => this.saveAndNavigate(res, res.role),
         error: (err) => {
-          console.error('Error joining chain:', err);
-          alert('Failed to join supply chain. Please try again.');
+          console.error(err);
+          alert(err.error || 'Invalid code or link.');
         }
       });
   }

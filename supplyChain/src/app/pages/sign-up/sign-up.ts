@@ -14,26 +14,17 @@ export class SignUp {
   showPassword = false;
   showConfirmPassword = false;
   errorMessage = '';
-
   firstName = '';
   lastName = '';
-  username = '';
   email = '';
   password = '';
-  confirmPassword = '';
+  confirmPassword = ''
+  username = '';;
 
-  constructor(
-    private router: Router,
-    private authService: AuthService
-  ) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
-  togglePassword() {
-    this.showPassword = !this.showPassword;
-  }
-
-  toggleConfirmPassword() {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+  togglePassword()        { this.showPassword        = !this.showPassword; }
+  toggleConfirmPassword() { this.showConfirmPassword = !this.showConfirmPassword; }
 
   onSubmit() {
     this.errorMessage = '';
@@ -42,9 +33,8 @@ export class SignUp {
       this.errorMessage = 'Please fill in all required fields.';
       return;
     }
-
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Passwords do not match';
+      this.errorMessage = 'Passwords do not match.';
       return;
     }
 
@@ -52,14 +42,15 @@ export class SignUp {
 
     this.authService.register(fullName, this.email, this.password).subscribe({
       next: (response: any) => {
-        if (response) {
-          // ЗАПАЗВАМЕ ТОКЕНА И ТУК!
-          localStorage.setItem('token', response.token); 
-          localStorage.setItem('fullName', response.fullName);
-          localStorage.setItem('email', response.email);
-        }
-        // Пренасочваме директно към Dashboard-а
-        this.router.navigate(['/dashboard']);
+        // Запазваме токена — без chain все още
+        localStorage.setItem('token',    response.token);
+        localStorage.setItem('fullName', response.fullName);
+        localStorage.setItem('email',    response.email);
+        localStorage.setItem('role',     response.role ?? 'Employee');
+        // supplyChainId не се записва — няма chain още
+
+        // Новият потребител → intro за да създаде или се присъедини към chain
+        this.router.navigate(['/intro']);
       },
       error: (err) => {
         this.errorMessage = err.error || 'Възникна грешка при регистрация.';
