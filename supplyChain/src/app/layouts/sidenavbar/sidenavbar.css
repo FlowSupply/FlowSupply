@@ -300,3 +300,22 @@
         display: none;
     }
 }
+
+/* logout */
+.logout-btn {
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: 0.2s ease;
+  flex-shrink: 0;
+}
+
+.logout-btn:hover {
+  background-color: #ef444420;
+  color: #ef4444;
+}

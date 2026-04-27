@@ -36,19 +36,20 @@ export class LogIn {
 
     this.authService.login(this.email, this.password).subscribe({
       next: (response: any) => {
-        if (response) {
-          // ТУК БЕШЕ ПРОПУСКЪТ! Трябва да запазим токена:
-          localStorage.setItem('token', response.token); 
-          
-          // Запазваме и другите неща
-          localStorage.setItem('fullName', response.fullName);
-          localStorage.setItem('email', response.email);
-        }
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err) => {
-        this.errorMessage = err.error || 'Invalid email or password.';
+      localStorage.setItem('token',         response.token);
+      localStorage.setItem('fullName',      response.fullName);
+      localStorage.setItem('email',         response.email);
+      localStorage.setItem('role',          response.role ?? 'Employee');
+      localStorage.setItem('supplyChainId', response.supplyChainId ?? '');
+    
+      if (!response.supplyChainId) {
+        // Акаунтът съществува но няма chain — отиди към intro да създадеш
+        this.router.navigate(['/intro']);
+        return;
       }
+    
+      this.router.navigate(['/dashboard']);
+    },
     });
   }
 }

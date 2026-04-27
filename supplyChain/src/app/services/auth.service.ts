@@ -7,6 +7,7 @@ export interface AuthResponse {
   email: string;
   role: string;
   fullName: string;
+  supplyChainId?: string;
 }
 
 @Injectable({

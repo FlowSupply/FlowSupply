@@ -1,174 +1,119 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // Added for the modals [(ngModel)]
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+interface DashboardData {
+  totalOrders:    number;
+  totalProducts:  number;
+  lowStockCount:  number;
+  lateCount:      number;
+  lowStockItems:  { productName: string; current: number; min: number }[];
+  lateDeliveries: { days: number; name: string; supplier: string; order: string }[];
+  monthlyOrders:  { month: string; count: number }[];
+}
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule], 
   templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.css'],
+  styleUrl: './dashboard.css',
 })
 export class Dashboard implements OnInit {
 
-  chartValues = [80, 70, 20, 50, 10, 90];
+  // ==================== DASHBOARD DATA ====================
+  data: DashboardData | null = null;
+
   months: string[] = [];
-  maxValue = 0;
-  scaleSteps: number[] = [];
+  chartValues: number[] = [];
+  scaleSteps: number[] =[];
 
-  stockTrend = [435, 330, 437, 325, 318, 325, 320];
-  weekDays: string[] = [];
-  stockScaleSteps: number[] = [];
+  stockTrend =[435, 330, 437, 325, 318, 325, 320]; // static placeholder
+  weekDays   = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  stockScaleSteps: number[] =[];
 
+  // ==================== MODAL STATES ====================
   isCreateModalOpen = false;
   isJoinModalOpen = false;
   joinTab: 'code' | 'link' = 'code';
-  createForm = { name: '', industry: '', description: '', visibility: 'private' };
-  joinForm = { code: '', link: '' };
 
-  lowStockItems = [
-    { name: 'USB Cables (Type-C)', current: 12, min: 50 },
-    { name: 'HP Toner 26A',        current: 3,  min: 20 },
-    { name: 'AA Batteries (box)',  current: 8,  min: 30 },
-    { name: 'A4 Paper (pack)',     current: 15, min: 100 },
-  ];
+  createForm = {
+    name: '',
+    industry: '',
+    description: '',
+    visibility: 'private'
+  };
 
-  lateDeliveries = [
-    { days: 3, name: 'SSD disks',     supplier: 'TechParts BG', order: '#ORD-2041' },
-    { days: 5, name: 'Printer heads', supplier: 'OfficeMax',    order: '#ORD-2038' },
-    { days: 2, name: 'Cable connections',  supplier: 'ElektroSupply',order: '#ORD-2035' },
-  ];
+  joinForm = {
+    code: '',
+    link: ''
+  };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() {
-    this.months = this.getLastSixMonths();
-    this.maxValue = Math.max(...this.chartValues);
-    const roundedMax = Math.ceil(this.maxValue / 50) * 50;
-    const step = roundedMax / 5;
-    this.scaleSteps = Array.from({ length: 6 }, (_, i) => Math.round(i * step));
-
-    this.weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const stockMax = Math.max(...this.stockTrend);
-    const stockRoundedMax = Math.ceil(stockMax / 150) * 150;
-    const stockStep = stockRoundedMax / 4;
-    this.stockScaleSteps = Array.from({ length: 5 }, (_, i) => Math.round(i * stockStep));
+  ngOnInit() { 
+    this.loadDashboard(); 
   }
-
-  getLastSixMonths(): string[] {
-    const result: string[] = [];
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      result.push(d.toLocaleString('default', { month: 'long' }));
-    }
-    return result;
-  }
-
-
-  getLastSevenDays(): string[] {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const result: string[] = [];
-    const now = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-      result.push(days[d.getDay()]);
-    }
-    return result;
-  }
-
-getLinePoints(values: number[], max: number, width: number, height: number): string {
-    return values.map((v, i) => {
-        const x = (i / (values.length - 1)) * width;
-        const y = height - (v / max) * height;
-        return `${x},${y}`;
-    }).join(' ');
-}
-
-getAreaPoints(values: number[], max: number, width: number, height: number): string {
-    const linePoints = values.map((v, i) => {
-        const x = (i / (values.length - 1)) * width;
-        const y = height - (v / max) * height;
-        return `${x},${y}`;
-    });
-    return [`0,${height}`, ...linePoints, `${width},${height}`].join(' ');
-}
-
-  get stockScaleStepsReversed(): number[] {
-    return [...this.stockScaleSteps].reverse();
-  }
-
-  getLowStockPercent(current: number, min: number): number {
-    return Math.min((current / min) * 100, 100);
-  }
-
-  openCreateModal() { 
-    console.log('openCreateModal called');
-    this.isCreateModalOpen = true; 
-  }
-  openJoinModal() { 
-    console.log('openJoinModal called');
-    this.isJoinModalOpen = true; 
-  }
-  closeModals()     { this.isCreateModalOpen = false; this.isJoinModalOpen = false; }
 
   private getHeaders() {
     const token = localStorage.getItem('token');
     return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
   }
 
-  createChain() {
-    if (!this.createForm.name.trim()) {
-      alert('Chain name is required');
-      return;
-    }
-
-    const payload = {
-      name: this.createForm.name,
-      industry: this.createForm.industry,
-      description: this.createForm.description,
-      visibility: this.createForm.visibility
-    };
-
-    this.http.post('http://localhost:5090/api/chains', payload, { headers: this.getHeaders() })
+  loadDashboard() {
+    this.http.get<DashboardData>('http://localhost:5090/api/dashboard', { headers: this.getHeaders() })
       .subscribe({
-        next: (response) => {
-          alert('Supply chain created successfully!');
-          localStorage.setItem('supplyChain', JSON.stringify(response));
-          this.createForm = { name: '', industry: '', description: '', visibility: 'private' };
-          this.closeModals();
+        next: (d) => {
+          this.data = d;
+
+          // bar chart
+          this.months      = d.monthlyOrders.map(m => m.month);
+          this.chartValues = d.monthlyOrders.map(m => m.count);
+          const maxVal     = Math.max(...this.chartValues, 1);
+          const roundedMax = Math.ceil(maxVal / 10) * 10;
+          const step       = roundedMax / 5;
+          this.scaleSteps  = Array.from({ length: 6 }, (_, i) => Math.round(i * step));
+
+          // stock scale
+          const stockMax       = Math.max(...this.stockTrend);
+          const stockRounded   = Math.ceil(stockMax / 150) * 150;
+          const stockStep      = stockRounded / 4;
+          this.stockScaleSteps = Array.from({ length: 5 }, (_, i) => Math.round(i * stockStep));
+
+          this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error creating chain:', err);
-          alert('Failed to create supply chain. Please try again.');
-        }
+        error: (err) => console.error('Dashboard error:', err)
       });
   }
 
+  get stockScaleStepsReversed() { return [...this.stockScaleSteps].reverse(); }
+
+  getLinePoints(values: number[], max: number, width: number, height: number): string {
+    return values.map((v, i) => `${(i / (values.length - 1)) * width},${height - (v / max) * height}`).join(' ');
+  }
+
+  getAreaPoints(values: number[], max: number, width: number, height: number): string {
+    const pts = values.map((v, i) => `${(i / (values.length - 1)) * width},${height - (v / max) * height}`);
+    return [`0,${height}`, ...pts, `${width},${height}`].join(' ');
+  }
+
+  getLowStockPercent(current: number, min: number): number {
+    return Math.min((current / min) * 100, 100);
+  }
+
+  // ==================== MODAL ACTIONS ====================
+  closeModals() {
+    this.isCreateModalOpen = false;
+    this.isJoinModalOpen = false;
+  }
+
+  createChain() {
+    console.log('Creating chain...', this.createForm);
+    this.closeModals();
+  }
+
   joinChain() {
-    const code = this.joinTab === 'code' ? this.joinForm.code : this.joinForm.link;
-    if (!code.trim()) {
-      alert('Please enter an invite code or link');
-      return;
-    }
-
-    const payload = {
-      [this.joinTab === 'code' ? 'code' : 'link']: code
-    };
-
-    this.http.post('http://localhost:5090/api/chains/join', payload, { headers: this.getHeaders() })
-      .subscribe({
-        next: (response) => {
-          alert('Successfully joined supply chain!');
-          localStorage.setItem('supplyChain', JSON.stringify(response));
-          this.joinForm = { code: '', link: '' };
-          this.closeModals();
-        },
-        error: (err) => {
-          console.error('Error joining chain:', err);
-          alert('Failed to join supply chain. Please check your code and try again.');
-        }
-      });
+    console.log('Joining chain...', this.joinForm);
+    this.closeModals();
   }
 }
