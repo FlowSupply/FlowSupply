@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-import { Component } from '@angular/core';
-=======
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -14,29 +11,25 @@ interface DashboardData {
   lateDeliveries: { days: number; name: string; supplier: string; order: string }[];
   monthlyOrders:  { month: string; count: number }[];
 }
->>>>>>> Stashed changes
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [CommonModule], // Added CommonModule here to fix *ngIf and *ngFor warnings
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-<<<<<<< Updated upstream
-export class Dashboard {}
-=======
 export class Dashboard implements OnInit {
 
   data: DashboardData | null = null;
 
   // chart helpers
-  months: string[] = [];
+  months: string[] =[];
   chartValues: number[] = [];
   scaleSteps: number[] = [];
 
-  stockTrend = [435, 330, 437, 325, 318, 325, 320]; // static placeholder — replace with real data later
+  stockTrend =[435, 330, 437, 325, 318, 325, 320]; // static placeholder — replace with real data later
   weekDays   = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  stockScaleSteps: number[] = [];
+  stockScaleSteps: number[] =[];
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
@@ -81,11 +74,10 @@ export class Dashboard implements OnInit {
 
   getAreaPoints(values: number[], max: number, width: number, height: number): string {
     const pts = values.map((v, i) => `${(i / (values.length - 1)) * width},${height - (v / max) * height}`);
-    return [`0,${height}`, ...pts, `${width},${height}`].join(' ');
+    return[`0,${height}`, ...pts, `${width},${height}`].join(' ');
   }
 
   getLowStockPercent(current: number, min: number): number {
     return Math.min((current / min) * 100, 100);
   }
 }
->>>>>>> Stashed changes
