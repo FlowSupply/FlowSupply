@@ -66,6 +66,7 @@ public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] string status)
             ProductName  = request.ProductName,
             Quantity     = request.Quantity,
             SupplierName = "TBD", // ще се попълва от AI по-късно
+            Status       = "Pending",
             RequestId    = request.RequestId
         };
         _db.Orders.Add(order);

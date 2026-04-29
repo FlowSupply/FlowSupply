@@ -35,6 +35,7 @@ export interface Order {
 export class Orders implements OnInit {
   orders: Order[] = [];
   searchTerm = '';
+  showHistoryPanel = false;
   showFilterModal = false;
   filters = {
     status: '' as OrderStatus | ''
@@ -109,6 +110,16 @@ export class Orders implements OnInit {
     return filtered;
   }
 
+  get activeOrders() {
+    return this.filteredOrders.filter(o => o.status !== 'Delivered');
+  }
+
+  get historyOrders() {
+    return this.orders
+      .filter(o => o.status === 'Delivered' || o.status === 'Cancelled')
+      .sort((a, b) => this.getHistoryTimestamp(b) - this.getHistoryTimestamp(a));
+  }
+
   getSteps(order: Order): TimelineStep[] {
     const steps: TimelineStep[] = [
       { label: 'Order created', date: order.createdAt, done: true },
@@ -155,6 +166,20 @@ export class Orders implements OnInit {
 
   getStatusLabel(status: OrderStatus): string {
     return status;
+  }
+
+  getHistoryDate(order: Order): string | null {
+    return order.status === 'Cancelled' ? order.cancelledAt : order.deliveredAt;
+  }
+
+  toggleHistoryPanel() {
+    this.showHistoryPanel = !this.showHistoryPanel;
+    this.cdr.detectChanges();
+  }
+
+  private getHistoryTimestamp(order: Order): number {
+    const date = this.getHistoryDate(order);
+    return date ? new Date(date).getTime() : 0;
   }
 
   formatDate(dateStr: string | null): string {

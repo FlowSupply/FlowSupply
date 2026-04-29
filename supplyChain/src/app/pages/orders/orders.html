@@ -4,11 +4,14 @@
       <h1>Orders</h1>
       <p>Review and manage your orders</p>
     </div>
+    <button class="history-btn" (click)="toggleHistoryPanel()">
+      {{ showHistoryPanel ? 'Hide History' : 'History' }}
+    </button>
   </div>
 
   <div class="container-fluid searchFilter mt-4 mb-3">
     <input class="form-control" type="text" placeholder="Search orders..."
-           [(ngModel)]="searchTerm" />
+          [(ngModel)]="searchTerm" />
     <button class="filterBtn" (click)="openFilterModal()">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
         <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
@@ -16,13 +19,13 @@
     </button>
   </div>
 
-  <div class="empty-state" *ngIf="filteredOrders.length === 0">
+  <div class="empty-state" *ngIf="activeOrders.length === 0">
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path><path d="M12 22V12"></path></svg>
-    <p>No orders yet</p>
+    <p>No active orders</p>
   </div>
 
   <div class="orders-list">
-    <div class="order-card" *ngFor="let order of filteredOrders">
+    <div class="order-card" *ngFor="let order of activeOrders">
 
       <!-- LEFT -->
       <div class="order-left">
@@ -96,6 +99,38 @@
 
     </div>
   </div>
+
+  <div class="history-backdrop" *ngIf="showHistoryPanel" (click)="toggleHistoryPanel()"></div>
+  <aside class="history-panel" *ngIf="showHistoryPanel">
+    <div class="history-panel-topbar">
+      <div class="history-panel-header">
+        <h3>Order History</h3>
+        <p>Delivered and cancelled logs</p>
+      </div>
+      <button class="history-close" (click)="toggleHistoryPanel()">&times;</button>
+    </div>
+
+    <div class="history-empty" *ngIf="historyOrders.length === 0">
+      No history yet
+    </div>
+
+    <div class="history-list" *ngIf="historyOrders.length > 0">
+      <div class="history-item" *ngFor="let order of historyOrders">
+        <div class="history-item-top">
+          <span class="history-product">{{ order.productName }}</span>
+          <span class="history-status"
+                [ngClass]="{
+                  'status-delivered': order.status === 'Delivered',
+                  'status-cancelled': order.status === 'Cancelled'
+                }">
+            {{ order.status }}
+          </span>
+        </div>
+        <div class="history-meta">{{ order.supplierName }} • {{ order.quantity }} units</div>
+        <div class="history-date">{{ formatDate(getHistoryDate(order)) }}</div>
+      </div>
+    </div>
+  </aside>
 </div>
 
 <!-- Filter Modal -->
