@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<PurchaseRequest> PurchaseRequests => Set<PurchaseRequest>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<ChainInvite> ChainInvites => Set<ChainInvite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

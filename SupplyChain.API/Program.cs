@@ -77,6 +77,7 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 
