@@ -122,6 +122,7 @@ public class OrdersController : ControllerBase
         if (shouldApplyDeliveryToInventory)
         {
             await AddDeliveredOrderQuantityToInventory(order);
+            await MarkRequestAsDelivered(order);
         }
     }
 
@@ -133,7 +134,16 @@ public class OrdersController : ControllerBase
 
         if (product == null)
         {
-            throw new InvalidOperationException($"Cannot deliver order because product '{order.ProductName}' does not exist in inventory.");
+            product = new Product
+            {
+                ProductName = order.ProductName.Trim(),
+                ProductSKU = GenerateProductSku(order.ProductName),
+                ProductCategory = "Requested Items",
+                ProductAvailability = 0,
+                ProductMinimum = Math.Max(order.Quantity, 1)
+            };
+
+            _db.Products.Add(product);
         }
 
         product.ProductAvailability += order.Quantity;
@@ -141,4 +151,34 @@ public class OrdersController : ControllerBase
 
     private static string NormalizeProductName(string productName) =>
         productName.Trim().ToLowerInvariant();
+
+    private async Task MarkRequestAsDelivered(Order order)
+    {
+        if (order.RequestId == Guid.Empty)
+        {
+            return;
+        }
+
+        var request = await _db.PurchaseRequests.FindAsync(order.RequestId);
+        if (request != null)
+        {
+            request.Status = "Delivered";
+        }
+    }
+
+    private static string GenerateProductSku(string productName)
+    {
+        var lettersAndDigits = new string(productName
+            .ToUpperInvariant()
+            .Where(char.IsLetterOrDigit)
+            .Take(8)
+            .ToArray());
+
+        if (string.IsNullOrWhiteSpace(lettersAndDigits))
+        {
+            lettersAndDigits = "PRODUCT";
+        }
+
+        return $"{lettersAndDigits}-AUTO";
+    }
 }
