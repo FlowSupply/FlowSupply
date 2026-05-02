@@ -24,11 +24,15 @@ const authGuard = () => {
 
 // Guard: ако вече имаш chain → направо към dashboard
 const introGuard = () => {
-  const router = inject(Router);
-  const token = localStorage.getItem('token');
+  const router  = inject(Router);
+  const token   = localStorage.getItem('token');
   if (!token) { router.navigate(['/login']); return false; }
   const chainId = localStorage.getItem('supplyChainId');
-  if (chainId) { router.navigate(['/dashboard']); return false; }
+  // Само ако chainId е непразен string
+  if (chainId && chainId.trim() !== '') {
+    router.navigate(['/dashboard']);
+    return false;
+  }
   return true;
 };
 

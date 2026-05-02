@@ -30,26 +30,47 @@ export class JoinChain implements OnInit {
 
   ngOnInit() {
     const token = this.route.snapshot.queryParamMap.get('token');
-    if (!token) { this.error = 'Invalid link.'; this.loading = false; return; }
+    const email = this.route.snapshot.queryParamMap.get('email') || '';
 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    });
+    if (!token) {
+      this.error   = 'Invalid link.';
+      this.loading = false;
+      return;
+    }
 
-    this.http.post<any>('http://localhost:5090/api/chains/join', { token }, { headers })
-      .subscribe({
-        next: (res) => {
-          localStorage.setItem('supplyChainId',   res.chainId);
-          localStorage.setItem('supplyChainName', res.name ?? '');
-          localStorage.setItem('role',            res.role);
-          this.success = true;
-          this.loading = false;
-          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
-        },
-        error: (err) => {
-          this.error   = err.error || 'Invalid or expired link.';
-          this.loading = false;
-        }
+    const authToken = localStorage.getItem('token');
+
+    // Няма логнат потребител → прати към login или signup
+    if (!authToken) {
+      // Проверяваме дали имейлът има акаунт чрез signup route
+      // Backend-ът е записал email в invite-а — пращаме към login
+      // с token и email като параметри
+      this.router.navigate(['/login'], {
+        queryParams: { token, email }
       });
+      return;
+    }
+
+    // Има логнат потребител → опитай да се присъедини директно
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${authToken}` });
+
+    this.http.post<any>(
+      'http://localhost:5090/api/chains/join',
+      { token },
+      { headers }
+    ).subscribe({
+      next: (res) => {
+        localStorage.setItem('supplyChainId',   res.chainId);
+        localStorage.setItem('supplyChainName', res.name ?? '');
+        localStorage.setItem('role',            res.role);
+        this.success = true;
+        this.loading = false;
+        setTimeout(() => this.router.navigate(['/dashboard']), 1200);
+      },
+      error: (err) => {
+        this.error   = err.error || 'Invalid or expired link.';
+        this.loading = false;
+      }
+    });
   }
 }

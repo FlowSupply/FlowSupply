@@ -29,10 +29,14 @@ export class Members implements OnInit {
   inviteResult: { shortCode: string; inviteLink: string } | null = null;
   inviteLoading = false;
   inviteError = '';
+  
+  chainInviteCode = '';
+  chainInviteLink = '';
+
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() { this.loadMembers(); }
+  ngOnInit() { this.loadMembers(); this.loadChainInfo();}
 
   private getHeaders() {
     return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` });
@@ -45,6 +49,19 @@ export class Members implements OnInit {
         error: (err) => console.error('Error loading members:', err)
       });
   }
+
+  loadChainInfo() {
+  this.http.get<any>('http://localhost:5090/api/chains/invite-link', { headers: this.getHeaders() })
+    .subscribe({
+      next: (res) => {
+        this.chainInviteCode = res.code;
+        this.chainInviteLink = res.link;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error loading chain info:', err)
+    });
+}
+
 
   get filteredMembers() {
     if (!this.searchTerm) return this.members;
