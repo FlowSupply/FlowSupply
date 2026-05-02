@@ -113,7 +113,7 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
     await _db.SaveChangesAsync();
 
     var chain = await _db.Chains.FindAsync(chainId);
-    return Ok(new { chainId, chain?.Name, role });
+    return Ok(new { supplyChainId = chainId, chain?.Name, role });
 }
 
 

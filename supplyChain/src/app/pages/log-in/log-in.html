@@ -12,8 +12,14 @@
           placeholder="Enter email"
           name="email"
           [(ngModel)]="email"
+          [attr.readonly]="emailLocked ? '' : null"
+          [style.background]="emailLocked ? '#f3f3f3' : ''"
+          [style.cursor]="emailLocked ? 'not-allowed' : ''"
           required
         />
+        <small *ngIf="emailLocked" style="color:#985BB9; font-size:12px; margin-top:4px;">
+          ⚠️ Имейлът е зададен от поканата и не може да се промени.
+        </small>
       </div>
 
       <div class="form-group">
