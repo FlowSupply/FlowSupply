@@ -14,9 +14,9 @@ namespace SupplyChain.API.Controllers;
 public class MembersController : ControllerBase
 {
     private readonly AppDbContext _db;
+    
     private readonly EmailService _email;
-
-    public MembersController(AppDbContext db, EmailService email)
+public MembersController(AppDbContext db, EmailService email)
     {
         _db    = db;
         _email = email;
@@ -83,15 +83,13 @@ public class MembersController : ControllerBase
             .AnyAsync(u => u.Email == dto.Email.ToLower().Trim());
 
         var baseUrl    = "http://localhost:4200";
-        var encodedEmail = Uri.EscapeDataString(dto.Email);
-
-        // ПОПРАВКА: hasAccount → /signin (не /join), без акаунт → /signup
         var inviteLink = hasAccount
-            ? $"{baseUrl}/signin?token={invite.Id}&email={encodedEmail}"
-            : $"{baseUrl}/signup?token={invite.Id}&email={encodedEmail}";
+            ? $"{baseUrl}/join?token={invite.Id}"
+            : $"{baseUrl}/signup?token={invite.Id}&email={Uri.EscapeDataString(dto.Email)}";
 
         await _email.SendInviteEmailAsync(dto.Email, inviteLink, chain.Name, hasAccount);
 
+        // Върни и кода за ръчно споделяне (първите 8 символа)
         var shortCode = invite.Id.ToString().Replace("-", "").Substring(0, 8).ToUpper();
 
         return Ok(new { inviteId = invite.Id, shortCode, inviteLink });
@@ -113,6 +111,7 @@ public class MembersController : ControllerBase
 
         membership.Role = role;
 
+        // Обнови и User.Role
         var user = await _db.Users.FindAsync(userId);
         if (user != null) user.Role = role;
 
@@ -142,27 +141,6 @@ public class MembersController : ControllerBase
 
         await _db.SaveChangesAsync();
         return Ok();
-    }
-
-    // GET api/members/invite-code — връща постоянния код на chain-а
-    [HttpGet("invite-code")]
-    public async Task<IActionResult> GetInviteCode()
-    {
-        var chainId = await GetChainId();
-        if (chainId == null) return BadRequest("No chain.");
-
-        var chain = await _db.Chains.FindAsync(chainId);
-        if (chain == null) return NotFound();
-
-        if (string.IsNullOrEmpty(chain.InviteCode))
-        {
-            chain.InviteCode = Guid.NewGuid().ToString("N")[..8].ToUpper();
-            await _db.SaveChangesAsync();
-        }
-
-        var joinLink = $"http://localhost:4200/join-by-code?code={chain.InviteCode}";
-
-        return Ok(new { code = chain.InviteCode, joinLink });
     }
 }
 
