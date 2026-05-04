@@ -11,6 +11,8 @@ import { Inventory } from './pages/inventory/inventory';
 import { Requests } from './pages/requests/requests';
 import { Approvals } from './pages/approvals/approvals';
 import { Orders } from './pages/orders/orders';
+import { Members } from './pages/members/members';
+import { JoinChain } from './pages/join-chain/join-chain';
 
 // Guard: трябва да си логнат
 const authGuard = () => {
@@ -22,11 +24,15 @@ const authGuard = () => {
 
 // Guard: ако вече имаш chain → направо към dashboard
 const introGuard = () => {
-  const router = inject(Router);
-  const token = localStorage.getItem('token');
+  const router  = inject(Router);
+  const token   = localStorage.getItem('token');
   if (!token) { router.navigate(['/login']); return false; }
   const chainId = localStorage.getItem('supplyChainId');
-  if (chainId) { router.navigate(['/dashboard']); return false; }
+  // Само ако chainId е непразен string
+  if (chainId && chainId.trim() !== '') {
+    router.navigate(['/dashboard']);
+    return false;
+  }
   return true;
 };
 
@@ -43,6 +49,7 @@ export const routes: Routes = [
   { path: 'login',  component: LogIn },
   { path: 'signup', component: SignUp },
   { path: 'intro',  component: IntroHome, canActivate: [introGuard] },
+  { path: 'join', component: JoinChain },
 
   {
     path: '', component: Sidenavbar,
@@ -53,6 +60,7 @@ export const routes: Routes = [
       { path: 'inventory',        component: Inventory },
       { path: 'purchase-requests',component: Requests },
       { path: 'orders',           component: Orders },
+      { path: 'members', component: Members, canActivate: [() => roleGuard(['SuperAdmin'])()] },
 
       // Admin + SuperAdmin only
       { path: 'suppliers',  component: Suppliers,  canActivate: [() => roleGuard(['Admin','SuperAdmin'])()]  },
