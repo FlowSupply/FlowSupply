@@ -1,5 +1,5 @@
 // В log-in.ts добави OnInit и ActivatedRoute:
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -17,6 +17,7 @@ export class LogIn implements OnInit {
   password    = '';
   errorMessage = '';
   showPassword = false;
+  isSubmitting = false;
 
   inviteToken  = '';
   emailLocked  = false;
@@ -25,7 +26,8 @@ export class LogIn implements OnInit {
     private router:      Router,
     private route:       ActivatedRoute,
     private http:        HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr:         ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -43,11 +45,14 @@ export class LogIn implements OnInit {
     this.errorMessage = '';
     if (!this.email || !this.password) {
       this.errorMessage = 'Please fill in all fields.';
+      this.cdr.detectChanges();
       return;
     }
 
+    this.isSubmitting = true;
     this.authService.login(this.email, this.password).subscribe({
       next: (response: any) => {
+        this.isSubmitting = false;
         localStorage.setItem('token',         response.token);
         localStorage.setItem('fullName',      response.fullName);
         localStorage.setItem('email',         response.email);
@@ -71,14 +76,38 @@ export class LogIn implements OnInit {
             error: () => this.router.navigate(['/dashboard'])
           });
         } else if (!response.supplyChainId) {
-          this.errorMessage = 'Your account is not linked to a supply chain. Contact your administrator.';
+          localStorage.removeItem('supplyChainId');
+          localStorage.removeItem('supplyChainName');
+          this.router.navigate(['/intro']);
         } else {
           this.router.navigate(['/dashboard']);
         }
       },
       error: (err) => {
-        this.errorMessage = err.error || 'Invalid email or password.';
+        this.errorMessage = this.getErrorMessage(err, 'Invalid email or password.');
+        this.isSubmitting = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  private getErrorMessage(err: any, fallback: string): string {
+    if (typeof err?.error === 'string') {
+      return err.error;
+    }
+
+    if (typeof err?.error?.message === 'string') {
+      return err.error.message;
+    }
+
+    if (typeof err?.error?.title === 'string') {
+      return err.error.title;
+    }
+
+    if (typeof err?.message === 'string') {
+      return err.message;
+    }
+
+    return fallback;
   }
 }

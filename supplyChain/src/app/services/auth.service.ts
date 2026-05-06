@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 export interface AuthResponse {
@@ -26,13 +26,18 @@ export class AuthService {
     );
   }
 
-  register(fullName: string, email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, { fullName, email, password }).pipe(
-      tap((response) => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response));
-      })
-    );
+  register(fullName: string, email: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/register`, { fullName, email, password });
+  }
+
+  verifyEmail(token: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/verify-email`, { token });
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    return this.http.post<{ message: string }>(`${this.apiUrl}/change-password`, { currentPassword, newPassword }, { headers });
   }
 
   getToken(): string | null {

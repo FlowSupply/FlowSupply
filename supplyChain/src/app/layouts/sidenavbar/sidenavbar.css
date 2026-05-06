@@ -164,6 +164,20 @@
     opacity: 0.6;
 }
 
+.change-password-link {
+    width: fit-content;
+    margin-top: 4px;
+    color: #e9d5ff;
+    font-size: 10px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.change-password-link:hover {
+    color: white;
+    text-decoration: underline;
+}
+
 .sidebar.collapsed {
     width: 70px;
     padding-left: 10px;

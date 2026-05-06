@@ -79,6 +79,13 @@
         <p class="error-text">{{ errorMessage }}</p>
       </div>
 
+      <div *ngIf="successMessage.length > 0" class="flex items-center full-width success-box" role="status">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="success-icon" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M6.97 10.03a.75.75 0 0 0 1.07 0l3.992-3.99a.75.75 0 1 0-1.061-1.06L7.5 8.439 5.53 6.47a.75.75 0 0 0-1.06 1.061z"/>
+        </svg>
+        <p class="success-text">{{ successMessage }}</p>
+      </div>
+
       <button type="submit" class="btn btn-primary" [disabled]="signUpForm.invalid">Sign Up</button>
 
       <div class="logIn">

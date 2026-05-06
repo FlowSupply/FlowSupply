@@ -1,0 +1,20 @@
+<div class="page">
+  <div class="container">
+    <section class="panel">
+      <h1>Email verification</h1>
+
+      <div class="state-badge"
+           [ngClass]="{
+             'state-loading': isLoading,
+             'state-success': isSuccess,
+             'state-error': !isLoading && !isSuccess
+           }">
+        {{ isLoading ? 'Checking' : (isSuccess ? 'Verified' : 'Failed') }}
+      </div>
+
+      <p class="message">{{ message }}</p>
+
+      <a routerLink="/login" class="btn">Go to sign in</a>
+    </section>
+  </div>
+</div>

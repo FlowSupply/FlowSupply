@@ -115,6 +115,28 @@
     margin: 0;
 }
 
+.success-box {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+}
+
+.success-icon {
+    color: #047857;
+    flex-shrink: 0;
+}
+
+.success-text {
+    color: #047857;
+    font-size: 14px;
+    margin: 0;
+}
+
 .password-wrapper {
   position: relative;
   display: inline-block;

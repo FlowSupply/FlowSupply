@@ -168,6 +168,7 @@
   <div class="userInfo" *ngIf="!isCollapsed">
     <p class="username">{{ currentUserName }}</p>
     <p class="email">{{ currentUserEmail }}</p>
+    <a class="change-password-link" routerLink="/change-password">Change password</a>
   </div>
 
   <button class="logout-btn" (click)="logout()" title="Logout">

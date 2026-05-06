@@ -8,4 +8,7 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "Employee";
     public Guid? SupplyChainId { get; set; } // null = няма chain още
+    public bool EmailConfirmed { get; set; }
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiresAt { get; set; }
 }

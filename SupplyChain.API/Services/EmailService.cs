@@ -17,34 +17,98 @@ public class EmailService
         _config = config;
     }
 
+    public Task SendEmailVerificationAsync(string toEmail, string fullName, string verificationLink)
+    {
+        var html = $@"
+<!DOCTYPE html>
+<html lang='bg'>
+<head><meta charset='UTF-8'></head>
+<body style='margin:0;padding:0;background:#f3f0ff;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f3f0ff;padding:40px 0;'>
+    <tr>
+      <td align='center'>
+        <table width='520' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(109,40,217,0.10);'>
+          <tr>
+            <td style='background:linear-gradient(135deg,#6d28d9,#7c3aed);padding:32px 40px;text-align:center;'>
+              <p style='margin:0;color:#e9d5ff;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
+              <h1 style='margin:10px 0 0;color:#ffffff;font-size:26px;font-weight:700;'>Потвърдете имейла си</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:36px 40px;'>
+              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>Здравейте, {fullName}</p>
+              <p style='margin:0 0 24px;font-size:16px;color:#374151;line-height:1.6;'>
+                За да активирате акаунта си във FlowSupply, потвърдете имейл адреса си от бутона по-долу.
+              </p>
+              <table cellpadding='0' cellspacing='0' width='100%'>
+                <tr>
+                  <td align='center'>
+                    <a href='{verificationLink}' style='display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:10px;letter-spacing:0.02em;'>
+                      Потвърди имейла
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:20px 40px 28px;border-top:1px solid #f3f4f6;text-align:center;'>
+              <p style='margin:0;font-size:12px;color:#9ca3af;line-height:1.6;'>
+                Линкът е валиден 24 часа.<br>
+                Ако не сте създавали акаунт, просто игнорирайте този имейл.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
+
+        return SendHtmlEmailAsync(toEmail, "Потвърждение на имейл — FlowSupply", html);
+    }
+
+    public Task SendPasswordChangedEmailAsync(string toEmail, string fullName)
+    {
+        var html = $@"
+<!DOCTYPE html>
+<html lang='bg'>
+<head><meta charset='UTF-8'></head>
+<body style='margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f8fafc;padding:40px 0;'>
+    <tr>
+      <td align='center'>
+        <table width='520' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.10);'>
+          <tr>
+            <td style='background:#111827;padding:30px 40px;text-align:center;'>
+              <p style='margin:0;color:#d1d5db;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
+              <h1 style='margin:10px 0 0;color:#ffffff;font-size:24px;font-weight:700;'>Паролата е сменена</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:34px 40px;'>
+              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>Здравейте, {fullName}</p>
+              <p style='margin:0;font-size:16px;color:#374151;line-height:1.6;'>
+                Паролата за вашия FlowSupply акаунт беше сменена успешно.
+              </p>
+              <p style='margin:20px 0 0;font-size:14px;color:#6b7280;line-height:1.6;'>
+                Ако не сте направили тази промяна, свържете се с администратор възможно най-скоро.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
+
+        return SendHtmlEmailAsync(toEmail, "Паролата ви беше сменена — FlowSupply", html);
+    }
+
     public async Task SendInviteEmailAsync(string toEmail, string inviteLink, string chainName, bool hasAccount)
     {
-        var clientId     = _config["Gmail:ClientId"]!;
-        var clientSecret = _config["Gmail:ClientSecret"]!;
-        var refreshToken = _config["Gmail:RefreshToken"]!;
-        var senderEmail  = _config["Gmail:SenderEmail"]!;
-
-        var credential = new UserCredential(
-            new GoogleAuthorizationCodeFlow(
-                new GoogleAuthorizationCodeFlow.Initializer
-                {
-                    ClientSecrets = new ClientSecrets
-                    {
-                        ClientId     = clientId,
-                        ClientSecret = clientSecret
-                    },
-                    Scopes = new[] { GmailService.Scope.GmailSend }
-                }),
-            "user",
-            new TokenResponse { RefreshToken = refreshToken }
-        );
-
-        var gmailService = new GmailService(new BaseClientService.Initializer
-        {
-            HttpClientInitializer = credential,
-            ApplicationName       = "FlowSupply"
-        });
-
         var action = hasAccount ? "влезете" : "се регистрирате и влезете";
 
         var html = $@"
@@ -140,11 +204,42 @@ public class EmailService
 </body>
 </html>";
 
+        await SendHtmlEmailAsync(toEmail, $"Покана към {chainName} — FlowSupply", html);
+    }
+
+    private async Task SendHtmlEmailAsync(string toEmail, string subject, string html)
+    {
+        var clientId     = _config["Gmail:ClientId"]!;
+        var clientSecret = _config["Gmail:ClientSecret"]!;
+        var refreshToken = _config["Gmail:RefreshToken"]!;
+        var senderEmail  = _config["Gmail:SenderEmail"]!;
+
+        var credential = new UserCredential(
+            new GoogleAuthorizationCodeFlow(
+                new GoogleAuthorizationCodeFlow.Initializer
+                {
+                    ClientSecrets = new ClientSecrets
+                    {
+                        ClientId     = clientId,
+                        ClientSecret = clientSecret
+                    },
+                    Scopes = new[] { GmailService.Scope.GmailSend }
+                }),
+            "user",
+            new TokenResponse { RefreshToken = refreshToken }
+        );
+
+        var gmailService = new GmailService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName       = "FlowSupply"
+        });
+
         // Използваме MimeKit за правилен UTF-8 encoding
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress("FlowSupply", senderEmail));
         message.To.Add(new MailboxAddress("", toEmail));
-        message.Subject = $"Покана към {chainName} — FlowSupply";
+        message.Subject = subject;
 
         var bodyBuilder = new BodyBuilder { HtmlBody = html };
         message.Body = bodyBuilder.ToMessageBody();

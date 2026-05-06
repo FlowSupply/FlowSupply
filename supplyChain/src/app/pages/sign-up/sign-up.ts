@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -15,6 +15,7 @@ export class SignUp implements OnInit {
   showPassword        = false;
   showConfirmPassword = false;
   errorMessage        = '';
+  successMessage      = '';
   firstName   = '';
   lastName    = '';
   email       = '';
@@ -29,7 +30,8 @@ export class SignUp implements OnInit {
     private router: Router,
     private route:  ActivatedRoute,
     private http:   HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr:    ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -47,6 +49,7 @@ export class SignUp implements OnInit {
 
   onSubmit() {
     this.errorMessage = '';
+    this.successMessage = '';
 
     if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
       this.errorMessage = 'Please fill in all required fields.';
@@ -60,40 +63,11 @@ export class SignUp implements OnInit {
     const fullName = `${this.firstName} ${this.lastName}`.trim();
 
     this.authService.register(fullName, this.email, this.password).subscribe({
-      next: (response: any) => {
-        localStorage.setItem('token',    response.token);
-        localStorage.setItem('fullName', response.fullName);
-        localStorage.setItem('email',    response.email);
-        localStorage.setItem('role',     response.role ?? 'Employee');
-        localStorage.removeItem('supplyChainId'); 
-        localStorage.removeItem('supplyChainName');
-
-        // Ако има invite token → влез в chain-а
-        if (this.inviteToken) {
-          const headers = new HttpHeaders({
-            'Authorization': `Bearer ${response.token}`
-          });
-          this.http.post<any>(
-            'http://localhost:5090/api/chains/join',
-            { token: this.inviteToken },
-            { headers }
-          ).subscribe({
-            next: (res) => {
-              localStorage.setItem('supplyChainId',   res.chainId);
-              localStorage.setItem('supplyChainName', res.name ?? '');
-              localStorage.setItem('role',            res.role);
-              this.router.navigate(['/dashboard']);
-            },
-            error: (err) => {
-              console.error('Join chain error:', err);
-              // Токенът може да е изтекъл — прати към intro
-              this.router.navigate(['/intro']);
-            }
-          });
-        } else {
-          // Нормална регистрация без покана → intro
-          this.router.navigate(['/intro']);
-        }
+      next: () => {
+        this.successMessage = 'A verification email has been sent. Open it and confirm your email before signing in.';
+        this.password = '';
+        this.confirmPassword = '';
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.errorMessage = err.error || 'Registration failed.';

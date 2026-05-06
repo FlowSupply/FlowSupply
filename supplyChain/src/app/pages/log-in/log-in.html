@@ -1,6 +1,6 @@
 <div class="page">
   <div class="container">
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" novalidate>
       <h1>Sign in</h1>
 
       <div class="form-group">
@@ -14,7 +14,8 @@
                [readonly]="emailLocked"
                [style.background]="emailLocked ? '#f3f4f6' : ''"
                [style.cursor]="emailLocked ? 'not-allowed' : 'text'"
-               placeholder="Enter email" />
+               placeholder="Enter email"
+               required />
       </div>
 
       <div class="form-group">
@@ -24,7 +25,8 @@
                  class="form-control"
                  placeholder="Enter password"
                  name="password"
-                 [(ngModel)]="password" />
+                 [(ngModel)]="password"
+                 required />
           <button type="button" (click)="togglePassword()" class="btn-toggle-password">
             <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
               <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
@@ -39,14 +41,16 @@
         </div>
       </div>
 
-      <div *ngIf="errorMessage.length > 0" class="flex items-center full-width error-box" role="alert">
+      <div *ngIf="errorMessage.length > 0" class="error-box" role="alert">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon" viewBox="0 0 16 16">
           <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
         </svg>
         <p class="error-text">{{ errorMessage }}</p>
       </div>
 
-      <button type="submit" class="btn btn-primary">Sign in</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
+      </button>
 
       <div class="logIn">
         <p>Don't have an account? <a routerLink="/signup" class="sign-up">Sign Up</a></p>

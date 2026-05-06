@@ -22,6 +22,31 @@ form {
     background: radial-gradient(#e9d2f5e1);
 }
 
+.error-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background: #fef2f2;
+    box-sizing: border-box;
+}
+
+.error-box .icon {
+    color: #dc2626;
+    flex-shrink: 0;
+}
+
+.error-text {
+    color: #b91c1c;
+    font-size: 14px;
+    line-height: 1.35;
+    margin: 0;
+}
+
 .form-group{
     display: flex;
     padding-top: 10px;
@@ -72,6 +97,11 @@ label{
 
 .btn:hover{
     opacity: 0.8;
+}
+
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 
 h1{

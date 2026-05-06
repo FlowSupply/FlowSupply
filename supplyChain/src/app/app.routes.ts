@@ -13,6 +13,8 @@ import { Approvals } from './pages/approvals/approvals';
 import { Orders } from './pages/orders/orders';
 import { Members } from './pages/members/members';
 import { JoinChain } from './pages/join-chain/join-chain';
+import { VerifyEmail } from './pages/verify-email/verify-email';
+import { ChangePassword } from './pages/change-password/change-password';
 
 // Guard: трябва да си логнат
 const authGuard = () => {
@@ -48,6 +50,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login',  component: LogIn },
   { path: 'signup', component: SignUp },
+  { path: 'verify-email', component: VerifyEmail },
   { path: 'intro',  component: IntroHome, canActivate: [introGuard] },
   { path: 'join', component: JoinChain },
 
@@ -57,6 +60,7 @@ export const routes: Routes = [
     children: [
       { path: '',                 redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',        component: Dashboard },
+      { path: 'change-password',  component: ChangePassword },
       { path: 'inventory',        component: Inventory },
       { path: 'purchase-requests',component: Requests },
       { path: 'orders',           component: Orders },
