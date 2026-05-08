@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: flowsupply-api
+    runtime: docker
+    branch: emkata
+    dockerfilePath: ./SupplyChain.API/Dockerfile
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+
+  - type: static
+    name: flowsupply
+    branch: emkata
+    rootDir: supplyChain
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/supplyChain/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
