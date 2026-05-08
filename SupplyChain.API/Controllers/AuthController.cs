@@ -109,6 +109,22 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Please verify your email before signing in." });
         }
 
+        var loginIp = GetClientIpAddress();
+        var loginUserAgent = GetUserAgent();
+        var loginAt = DateTime.UtcNow;
+        var shouldNotifyNewLogin = HasPreviousLogin(user)
+            && IsDifferentLoginContext(user, loginIp, loginUserAgent);
+
+        user.LastLoginAt = loginAt;
+        user.LastLoginIp = loginIp;
+        user.LastLoginUserAgent = loginUserAgent;
+        await _context.SaveChangesAsync();
+
+        if (shouldNotifyNewLogin)
+        {
+            SendNewLoginAlertInBackground(user.Email, user.FullName, loginIp, loginUserAgent, loginAt);
+        }
+
         var token = _tokenService.CreateToken(user);
 
         return Ok(new AuthResponse
@@ -218,6 +234,37 @@ public class AuthController : ControllerBase
     private static string CreateSecureToken() =>
         Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
 
+    private static bool HasPreviousLogin(User user) =>
+        user.LastLoginAt.HasValue
+        && (!string.IsNullOrWhiteSpace(user.LastLoginIp)
+            || !string.IsNullOrWhiteSpace(user.LastLoginUserAgent));
+
+    private static bool IsDifferentLoginContext(User user, string currentIp, string currentUserAgent)
+    {
+        var previousIp = user.LastLoginIp ?? "";
+        var previousUserAgent = user.LastLoginUserAgent ?? "";
+
+        return !string.Equals(previousIp, currentIp, StringComparison.Ordinal)
+            || !string.Equals(previousUserAgent, currentUserAgent, StringComparison.Ordinal);
+    }
+
+    private string GetClientIpAddress()
+    {
+        var forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
+        {
+            return forwardedFor.Split(',')[0].Trim();
+        }
+
+        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    }
+
+    private string GetUserAgent()
+    {
+        var userAgent = Request.Headers.UserAgent.FirstOrDefault();
+        return string.IsNullOrWhiteSpace(userAgent) ? "unknown" : userAgent;
+    }
+
     private void SendPasswordChangedNotificationInBackground(string email, string fullName)
     {
         _ = Task.Run(async () =>
@@ -231,6 +278,23 @@ public class AuthController : ControllerBase
             catch
             {
                 // Password changes should not be blocked by notification email delivery.
+            }
+        });
+    }
+
+    private void SendNewLoginAlertInBackground(string email, string fullName, string ipAddress, string userAgent, DateTime loginAt)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
+                await emailService.SendNewLoginAlertAsync(email, fullName, ipAddress, userAgent, loginAt);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send new login alert to {Email}", email);
             }
         });
     }

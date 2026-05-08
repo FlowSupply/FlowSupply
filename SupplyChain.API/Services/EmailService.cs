@@ -107,6 +107,53 @@ public class EmailService
         return SendHtmlEmailAsync(toEmail, "Паролата ви беше сменена — FlowSupply", html);
     }
 
+    public Task SendNewLoginAlertAsync(string toEmail, string fullName, string ipAddress, string userAgent, DateTime loginAt)
+    {
+        var safeUserAgent = string.IsNullOrWhiteSpace(userAgent) ? "Unknown device" : userAgent;
+        var safeIpAddress = string.IsNullOrWhiteSpace(ipAddress) ? "Unknown IP" : ipAddress;
+        var loginTime = loginAt.ToString("yyyy-MM-dd HH:mm 'UTC'");
+
+        var html = $@"
+<!DOCTYPE html>
+<html lang='bg'>
+<head><meta charset='UTF-8'></head>
+<body style='margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f8fafc;padding:40px 0;'>
+    <tr>
+      <td align='center'>
+        <table width='560' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.10);'>
+          <tr>
+            <td style='background:#111827;padding:30px 40px;text-align:center;'>
+              <p style='margin:0;color:#d1d5db;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
+              <h1 style='margin:10px 0 0;color:#ffffff;font-size:24px;font-weight:700;'>Нов вход в акаунта</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:34px 40px;'>
+              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>Здравейте, {fullName}</p>
+              <p style='margin:0 0 20px;font-size:16px;color:#374151;line-height:1.6;'>
+                Засечен е вход в акаунта ви от ново устройство или локация.
+              </p>
+              <table width='100%' cellpadding='0' cellspacing='0' style='background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;'>
+                <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;'>IP адрес</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;'>{safeIpAddress}</td></tr>
+                <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;'>Време</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;border-top:1px solid #e5e7eb;'>{loginTime}</td></tr>
+                <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;'>Устройство</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;border-top:1px solid #e5e7eb;'>{safeUserAgent}</td></tr>
+              </table>
+              <p style='margin:20px 0 0;font-size:14px;color:#6b7280;line-height:1.6;'>
+                Ако това сте били вие, не е нужно действие. Ако не сте били вие, сменете паролата си веднага.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
+
+        return SendHtmlEmailAsync(toEmail, "Нов вход във FlowSupply акаунта", html);
+    }
+
     public async Task SendInviteEmailAsync(string toEmail, string inviteLink, string chainName, bool hasAccount)
     {
         var action = hasAccount ? "влезете" : "се регистрирате и влезете";

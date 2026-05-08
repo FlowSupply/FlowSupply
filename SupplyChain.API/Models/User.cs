@@ -11,4 +11,7 @@ public class User
     public bool EmailConfirmed { get; set; }
     public string? EmailVerificationToken { get; set; }
     public DateTime? EmailVerificationTokenExpiresAt { get; set; }
+    public DateTime? LastLoginAt { get; set; }
+    public string? LastLoginIp { get; set; }
+    public string? LastLoginUserAgent { get; set; }
 }
