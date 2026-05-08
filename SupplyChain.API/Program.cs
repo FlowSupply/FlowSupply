@@ -50,10 +50,21 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        var allowedOrigins = builder.Configuration
+        var configuredOrigins = builder.Configuration
             .GetSection("Cors:AllowedOrigins")
             .Get<string[]>()
-            ?? ["http://localhost:4200", "http://127.0.0.1:4200"];
+            ?? [];
+
+        var allowedOrigins = configuredOrigins
+            .Concat([
+                "https://flowsupply.onrender.com",
+                "http://localhost:4200",
+                "http://127.0.0.1:4200"
+            ])
+            .Select(origin => origin.Trim().TrimEnd('/'))
+            .Where(origin => !string.IsNullOrWhiteSpace(origin))
+            .Distinct()
+            .ToArray();
 
         policy
             .WithOrigins(allowedOrigins)
