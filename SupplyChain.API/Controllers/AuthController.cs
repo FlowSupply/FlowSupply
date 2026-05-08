@@ -112,8 +112,7 @@ public class AuthController : ControllerBase
         var loginIp = GetClientIpAddress();
         var loginUserAgent = GetUserAgent();
         var loginAt = DateTime.UtcNow;
-        var shouldNotifyNewLogin = HasPreviousLogin(user)
-            && IsDifferentLoginContext(user, loginIp, loginUserAgent);
+        var shouldNotifyNewLogin = HasPreviousLogin(user);
 
         user.LastLoginAt = loginAt;
         user.LastLoginIp = loginIp;
@@ -238,15 +237,6 @@ public class AuthController : ControllerBase
         user.LastLoginAt.HasValue
         && (!string.IsNullOrWhiteSpace(user.LastLoginIp)
             || !string.IsNullOrWhiteSpace(user.LastLoginUserAgent));
-
-    private static bool IsDifferentLoginContext(User user, string currentIp, string currentUserAgent)
-    {
-        var previousIp = user.LastLoginIp ?? "";
-        var previousUserAgent = user.LastLoginUserAgent ?? "";
-
-        return !string.Equals(previousIp, currentIp, StringComparison.Ordinal)
-            || !string.Equals(previousUserAgent, currentUserAgent, StringComparison.Ordinal);
-    }
 
     private string GetClientIpAddress()
     {
