@@ -107,10 +107,10 @@ public class EmailService
         return SendHtmlEmailAsync(toEmail, "Паролата ви беше сменена — FlowSupply", html);
     }
 
-    public Task SendNewLoginAlertAsync(string toEmail, string fullName, string ipAddress, string userAgent, DateTime loginAt)
+    public Task SendNewLoginAlertAsync(string toEmail, string fullName, string location, string userAgent, DateTime loginAt)
     {
         var safeUserAgent = string.IsNullOrWhiteSpace(userAgent) ? "Unknown device" : userAgent;
-        var safeIpAddress = string.IsNullOrWhiteSpace(ipAddress) ? "Unknown IP" : ipAddress;
+        var safeLocation = string.IsNullOrWhiteSpace(location) ? "Unknown location" : location;
         var loginTime = loginAt.ToString("yyyy-MM-dd HH:mm 'UTC'");
 
         var html = $@"
@@ -135,7 +135,7 @@ public class EmailService
                 Засечен е вход в акаунта ви от ново устройство или локация.
               </p>
               <table width='100%' cellpadding='0' cellspacing='0' style='background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;'>
-                <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;'>IP адрес</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;'>{safeIpAddress}</td></tr>
+                <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;'>Приблизителна локация</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;'>{safeLocation}</td></tr>
                 <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;'>Време</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;border-top:1px solid #e5e7eb;'>{loginTime}</td></tr>
                 <tr><td style='padding:14px 18px;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;'>Устройство</td><td style='padding:14px 18px;color:#111827;font-size:13px;font-weight:700;border-top:1px solid #e5e7eb;'>{safeUserAgent}</td></tr>
               </table>

@@ -111,6 +111,7 @@ public class AuthController : ControllerBase
 
         var loginIp = GetClientIpAddress();
         var loginUserAgent = GetUserAgent();
+        var loginLocation = GetClientLocation();
         var loginAt = DateTime.UtcNow;
         var shouldNotifyNewLogin = HasPreviousLogin(user);
 
@@ -121,7 +122,7 @@ public class AuthController : ControllerBase
 
         if (shouldNotifyNewLogin)
         {
-            SendNewLoginAlertInBackground(user.Email, user.FullName, loginIp, loginUserAgent, loginAt);
+            SendNewLoginAlertInBackground(user.Email, user.FullName, loginLocation, loginUserAgent, loginAt);
         }
 
         var token = _tokenService.CreateToken(user);
@@ -255,6 +256,23 @@ public class AuthController : ControllerBase
         return string.IsNullOrWhiteSpace(userAgent) ? "unknown" : userAgent;
     }
 
+    private string GetClientLocation()
+    {
+        var country = Request.Headers["CF-IPCountry"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(country) && country != "XX")
+        {
+            return country;
+        }
+
+        var renderCountry = Request.Headers["X-Forwarded-Country"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(renderCountry))
+        {
+            return renderCountry;
+        }
+
+        return "Unknown location";
+    }
+
     private void SendPasswordChangedNotificationInBackground(string email, string fullName)
     {
         _ = Task.Run(async () =>
@@ -272,7 +290,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    private void SendNewLoginAlertInBackground(string email, string fullName, string ipAddress, string userAgent, DateTime loginAt)
+    private void SendNewLoginAlertInBackground(string email, string fullName, string location, string userAgent, DateTime loginAt)
     {
         _ = Task.Run(async () =>
         {
@@ -280,7 +298,7 @@ public class AuthController : ControllerBase
             {
                 using var scope = _scopeFactory.CreateScope();
                 var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
-                await emailService.SendNewLoginAlertAsync(email, fullName, ipAddress, userAgent, loginAt);
+                await emailService.SendNewLoginAlertAsync(email, fullName, location, userAgent, loginAt);
             }
             catch (Exception ex)
             {
