@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 @Component({
   selector: 'app-join-chain',
@@ -55,7 +56,7 @@ export class JoinChain implements OnInit {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${authToken}` });
 
     this.http.post<any>(
-      'http://localhost:5090/api/chains/join',
+      apiUrl('chains/join'),
       { token },
       { headers }
     ).subscribe({

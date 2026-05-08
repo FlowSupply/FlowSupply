@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 export interface PurchaseRequest {
   requestId: string;
@@ -31,7 +32,7 @@ export class Approvals implements OnInit {
   }
 
   loadPending() {
-    this.http.get<PurchaseRequest[]>('http://localhost:5090/api/requests', { headers: this.getHeaders() })
+    this.http.get<PurchaseRequest[]>(apiUrl('requests'), { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
           this.approvals = data.filter(r => r.status === 'Pending');
@@ -51,7 +52,7 @@ export class Approvals implements OnInit {
 
   private updateStatus(item: PurchaseRequest, status: string) {
     this.http.patch(
-      `http://localhost:5090/api/requests/${item.requestId}/status`,
+      apiUrl(`requests/${item.requestId}/status`),
       JSON.stringify(status),
       { headers: this.getHeaders().set('Content-Type', 'application/json') }
     ).subscribe({

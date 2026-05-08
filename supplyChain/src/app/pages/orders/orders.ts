@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
 
@@ -55,7 +56,7 @@ export class Orders implements OnInit {
   }
 
   loadOrders() {
-    this.http.get<Order[]>('http://localhost:5090/api/orders', { headers: this.getHeaders() })
+    this.http.get<Order[]>(apiUrl('orders'), { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
           this.orders = data;
@@ -77,7 +78,7 @@ export class Orders implements OnInit {
 
   changeStatus(order: Order, status: OrderStatus) {
     this.http.patch<Order>(
-      `http://localhost:5090/api/orders/${order.orderId}/status`,
+      apiUrl(`orders/${order.orderId}/status`),
       { status },
       { headers: this.getHeaders() }
     ).subscribe({

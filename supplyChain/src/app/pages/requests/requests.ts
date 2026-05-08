@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 export type RequestStatus = 'Pending' | 'Approved' | 'Delivered' | 'Rejected';
 export type RequestPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -46,7 +47,7 @@ export class Requests implements OnInit {
   }
 
   loadRequests() {
-    this.http.get<PurchaseRequest[]>('http://localhost:5090/api/requests', { headers: this.getHeaders() })
+    this.http.get<PurchaseRequest[]>(apiUrl('requests'), { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
           this.requests = data;
@@ -62,7 +63,7 @@ export class Requests implements OnInit {
 
     const body = { productName, quantity, reason, priority };
 
-    this.http.post<PurchaseRequest>('http://localhost:5090/api/requests', body, { headers: this.getHeaders() })
+    this.http.post<PurchaseRequest>(apiUrl('requests'), body, { headers: this.getHeaders() })
       .subscribe({
         next: (created) => {
           this.requests.push(created);
@@ -85,7 +86,7 @@ export class Requests implements OnInit {
       priority: request.priority
     };
 
-    this.http.post<PurchaseRequest>('http://localhost:5090/api/requests', body, { headers: this.getHeaders() })
+    this.http.post<PurchaseRequest>(apiUrl('requests'), body, { headers: this.getHeaders() })
       .subscribe({
         next: (created) => {
           this.requests.unshift(created);

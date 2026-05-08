@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 type ProductStatus = 'Out of Stock' | 'Critical' | 'Very Low' | 'Low' | 'Good' | 'Optimal' | 'Overstock';
 
@@ -39,7 +40,7 @@ export class Inventory implements OnInit, OnDestroy {
   private readonly refreshIntervalMs = 1500;
   private refreshTimer?: ReturnType<typeof setInterval>;
   private highlightTimer?: ReturnType<typeof setTimeout>;
-  private readonly apiUrl = 'http://localhost:5090/api/products';
+  private readonly apiUrl = apiUrl('products');
   private recentlyChangedProductIds = new Set<number>();
   private hasLoadedBackendInventory = false;
   lastUpdatedAt = '';

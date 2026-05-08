@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { apiUrl } from './api.config';
 
 export interface AuthResponse {
   token: string;
@@ -15,7 +16,7 @@ export interface AuthResponse {
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5090/api/Auth';
+  private apiUrl = apiUrl('Auth');
 
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(

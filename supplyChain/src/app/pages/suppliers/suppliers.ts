@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 @Component({
   selector: 'app-suppliers',
@@ -126,7 +127,7 @@ export class Suppliers implements OnInit {
 
 
 loadSuppliers() {
-  this.http.get<any[]>('http://localhost:5090/api/suppliers', { headers: this.getHeaders() })
+  this.http.get<any[]>(apiUrl('suppliers'), { headers: this.getHeaders() })
     .subscribe({
       next: (data) => {
         this.suppliers = data;
@@ -140,7 +141,7 @@ loadSuppliers() {
 
   // Добавя нов доставчик в базата данни
   addSupplier() {
-    this.http.post('http://localhost:5090/api/suppliers', this.newSupplier, { headers: this.getHeaders() })
+    this.http.post(apiUrl('suppliers'), this.newSupplier, { headers: this.getHeaders() })
       .subscribe({
         next: (response: any) => {
           // Backend-ът връща новосъздадения доставчик (с неговото ново ID)

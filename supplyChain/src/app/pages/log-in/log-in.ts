@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { apiUrl } from '../../services/api.config';
 
 @Component({
   selector: 'app-log-in',
@@ -63,7 +64,7 @@ export class LogIn implements OnInit {
         if (this.inviteToken) {
           const headers = new HttpHeaders({ 'Authorization': `Bearer ${response.token}` });
           this.http.post<any>(
-            'http://localhost:5090/api/chains/join',
+            apiUrl('chains/join'),
             { token: this.inviteToken },
             { headers }
           ).subscribe({

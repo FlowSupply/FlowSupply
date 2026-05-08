@@ -14,12 +14,14 @@ namespace SupplyChain.API.Controllers;
 public class MembersController : ControllerBase
 {
     private readonly AppDbContext _db;
-    
     private readonly EmailService _email;
-public MembersController(AppDbContext db, EmailService email)
+    private readonly IConfiguration _configuration;
+
+    public MembersController(AppDbContext db, EmailService email, IConfiguration configuration)
     {
         _db    = db;
         _email = email;
+        _configuration = configuration;
     }
 
     private int GetUserId() =>
@@ -82,10 +84,10 @@ public MembersController(AppDbContext db, EmailService email)
         var hasAccount = await _db.Users
             .AnyAsync(u => u.Email == dto.Email.ToLower().Trim());
 
-        var baseUrl    = "http://localhost:4200";
+        var baseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
         var inviteLink = hasAccount
-            ? $"{baseUrl}/join?token={invite.Id}"
-            : $"{baseUrl}/signup?token={invite.Id}&email={Uri.EscapeDataString(dto.Email)}";
+            ? $"{baseUrl.TrimEnd('/')}/join?token={invite.Id}"
+            : $"{baseUrl.TrimEnd('/')}/signup?token={invite.Id}&email={Uri.EscapeDataString(dto.Email)}";
 
         await _email.SendInviteEmailAsync(dto.Email, inviteLink, chain.Name, hasAccount);
 

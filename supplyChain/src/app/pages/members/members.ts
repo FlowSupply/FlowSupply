@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { apiUrl } from '../../services/api.config';
 
 export interface Member {
   id: number;
@@ -43,7 +44,7 @@ export class Members implements OnInit {
   }
 
   loadMembers() {
-    this.http.get<Member[]>('http://localhost:5090/api/members', { headers: this.getHeaders() })
+    this.http.get<Member[]>(apiUrl('members'), { headers: this.getHeaders() })
       .subscribe({
         next: (data) => { this.members = data; this.cdr.detectChanges(); },
         error: (err) => console.error('Error loading members:', err)
@@ -51,7 +52,7 @@ export class Members implements OnInit {
   }
 
   loadChainInfo() {
-  this.http.get<any>('http://localhost:5090/api/chains/invite-link', { headers: this.getHeaders() })
+  this.http.get<any>(apiUrl('chains/invite-link'), { headers: this.getHeaders() })
     .subscribe({
       next: (res) => {
         this.chainInviteCode = res.code;
@@ -98,7 +99,7 @@ export class Members implements OnInit {
     this.inviteLoading = true;
     this.inviteError   = '';
 
-    this.http.post<any>('http://localhost:5090/api/members/invite',
+    this.http.post<any>(apiUrl('members/invite'),
       { email: this.inviteEmail, role: this.inviteRole },
       { headers: this.getHeaders() }
     ).subscribe({
@@ -117,7 +118,7 @@ export class Members implements OnInit {
 
   changeRole(member: Member, role: string) {
     this.http.patch(
-      `http://localhost:5090/api/members/${member.id}/role`,
+      apiUrl(`members/${member.id}/role`),
       JSON.stringify(role),
       { headers: this.getHeaders().set('Content-Type', 'application/json') }
     ).subscribe({
@@ -128,7 +129,7 @@ export class Members implements OnInit {
 
   removeMember(member: Member) {
     if (!confirm(`Remove ${member.fullName} from the chain?`)) return;
-    this.http.delete(`http://localhost:5090/api/members/${member.id}`, { headers: this.getHeaders() })
+    this.http.delete(apiUrl(`members/${member.id}`), { headers: this.getHeaders() })
       .subscribe({
         next: () => { this.members = this.members.filter(m => m.id !== member.id); this.cdr.detectChanges(); },
         error: (err) => console.error('Error removing member:', err)

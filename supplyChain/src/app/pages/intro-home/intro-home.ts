@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { apiUrl } from '../../services/api.config';
 
 @Component({
   selector: 'app-intro-home',
@@ -46,7 +47,7 @@ export class IntroHome {
   createChain() {
     if (!this.createForm.name.trim()) { alert('Chain name is required'); return; }
 
-    this.http.post<any>('http://localhost:5090/api/chains', this.createForm, { headers: this.getHeaders() })
+    this.http.post<any>(apiUrl('chains'), this.createForm, { headers: this.getHeaders() })
       .subscribe({
         next: (res) => this.saveAndNavigate(res, res.role),
         error: (err) => { console.error(err); alert('Failed to create chain.'); }
@@ -61,7 +62,7 @@ export class IntroHome {
     const value = this.joinTab === 'code' ? this.joinForm.code : this.joinForm.link;
     if (!value.trim()) { alert(`${this.joinTab === 'code' ? 'Code' : 'Link'} is required`); return; }
 
-    this.http.post<any>('http://localhost:5090/api/chains/join', payload, { headers: this.getHeaders() })
+    this.http.post<any>(apiUrl('chains/join'), payload, { headers: this.getHeaders() })
       .subscribe({
         next: (res) => this.saveAndNavigate(res, res.role),
         error: (err) => {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Added for the modals [(ngModel)]
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EMPTY, Subscription, catchError, interval, startWith, switchMap } from 'rxjs';
+import { apiUrl } from '../../services/api.config';
 
 interface DashboardData {
   totalOrders:    number;
@@ -72,7 +73,7 @@ export class Dashboard implements OnInit, OnDestroy {
       .pipe(
         startWith(0),
         switchMap(() =>
-          this.http.get<DashboardData>('http://localhost:5090/api/dashboard', { headers: this.getHeaders() })
+          this.http.get<DashboardData>(apiUrl('dashboard'), { headers: this.getHeaders() })
             .pipe(catchError((err) => {
               console.error('Dashboard error:', err);
               return EMPTY;
