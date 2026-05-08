@@ -18,19 +18,22 @@ public class AuthController : ControllerBase
     private readonly EmailService _emailService;
     private readonly IConfiguration _configuration;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         AppDbContext context,
         TokenService tokenService,
         EmailService emailService,
         IConfiguration configuration,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<AuthController> logger)
     {
         _context = context;
         _tokenService = tokenService;
         _emailService = emailService;
         _configuration = configuration;
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -67,7 +70,19 @@ public class AuthController : ControllerBase
 
         var frontendBaseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
         var verificationLink = $"{frontendBaseUrl.TrimEnd('/')}/verify-email?token={Uri.EscapeDataString(user.EmailVerificationToken)}";
-        await _emailService.SendEmailVerificationAsync(user.Email, user.FullName, verificationLink);
+        try
+        {
+            await _emailService.SendEmailVerificationAsync(user.Email, user.FullName, verificationLink);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+            return Ok(new
+            {
+                message = "Registration successful, but the verification email could not be sent. Contact an administrator.",
+                emailWarning = true
+            });
+        }
 
         return Ok(new { message = "Registration successful. Please verify your email before signing in." });
     }
