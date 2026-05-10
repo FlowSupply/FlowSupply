@@ -107,6 +107,58 @@ public class EmailService
         return SendHtmlEmailAsync(toEmail, "Паролата ви беше сменена — FlowSupply", html);
     }
 
+    public Task SendPasswordResetEmailAsync(string toEmail, string fullName, string resetLink)
+    {
+        var html = $@"
+<!DOCTYPE html>
+<html lang='bg'>
+<head><meta charset='UTF-8'></head>
+<body style='margin:0;padding:0;background:#f3f0ff;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f3f0ff;padding:40px 0;'>
+    <tr>
+      <td align='center'>
+        <table width='520' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(109,40,217,0.10);'>
+          <tr>
+            <td style='background:linear-gradient(135deg,#6d28d9,#7c3aed);padding:32px 40px;text-align:center;'>
+              <p style='margin:0;color:#e9d5ff;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
+              <h1 style='margin:10px 0 0;color:#ffffff;font-size:26px;font-weight:700;'>Смяна на парола</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:36px 40px;'>
+              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>Здравейте, {fullName}</p>
+              <p style='margin:0 0 24px;font-size:16px;color:#374151;line-height:1.6;'>
+                Получихме заявка за смяна на паролата ви. Използвайте бутона по-долу, за да зададете нова парола.
+              </p>
+              <table cellpadding='0' cellspacing='0' width='100%'>
+                <tr>
+                  <td align='center'>
+                    <a href='{resetLink}' style='display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:10px;letter-spacing:0.02em;'>
+                      Задай нова парола
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:20px 40px 28px;border-top:1px solid #f3f4f6;text-align:center;'>
+              <p style='margin:0;font-size:12px;color:#9ca3af;line-height:1.6;'>
+                Линкът е валиден 1 час.<br>
+                Ако не сте заявявали смяна на парола, игнорирайте този имейл.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
+
+        return SendHtmlEmailAsync(toEmail, "Смяна на парола — FlowSupply", html);
+    }
+
     public Task SendNewLoginAlertAsync(string toEmail, string fullName, string location, string userAgent, DateTime loginAt)
     {
         var safeUserAgent = string.IsNullOrWhiteSpace(userAgent) ? "Unknown device" : userAgent;

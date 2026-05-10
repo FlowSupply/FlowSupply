@@ -15,6 +15,8 @@ import { Members } from './pages/members/members';
 import { JoinChain } from './pages/join-chain/join-chain';
 import { VerifyEmail } from './pages/verify-email/verify-email';
 import { ChangePassword } from './pages/change-password/change-password';
+import { ForgotPassword } from './pages/forgot-password/forgot-password';
+import { ResetPassword } from './pages/reset-password/reset-password';
 
 // Guard: трябва да си логнат
 const authGuard = () => {
@@ -51,6 +53,8 @@ export const routes: Routes = [
   { path: 'login',  component: LogIn },
   { path: 'signup', component: SignUp },
   { path: 'verify-email', component: VerifyEmail },
+  { path: 'forgot-password', component: ForgotPassword },
+  { path: 'reset-password', component: ResetPassword },
   { path: 'intro',  component: IntroHome, canActivate: [introGuard] },
   { path: 'join', component: JoinChain },
 

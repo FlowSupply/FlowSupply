@@ -14,4 +14,6 @@ public class User
     public DateTime? LastLoginAt { get; set; }
     public string? LastLoginIp { get; set; }
     public string? LastLoginUserAgent { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
 }

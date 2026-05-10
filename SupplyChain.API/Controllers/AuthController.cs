@@ -137,6 +137,81 @@ public class AuthController : ControllerBase
         });
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest(new { message = "Email is required." });
+        }
+
+        var email = request.Email.Trim().ToLower();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+        {
+            return Ok(new { message = "If an account exists for this email, a reset link has been sent." });
+        }
+
+        user.PasswordResetToken = CreateSecureToken();
+        user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddHours(1);
+        await _context.SaveChangesAsync();
+
+        var frontendBaseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
+        var resetLink = $"{frontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(user.PasswordResetToken)}";
+
+        try
+        {
+            await _emailService.SendPasswordResetEmailAsync(user.Email, user.FullName, resetLink);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
+            return Ok(new { message = "If an account exists for this email, a reset link has been sent." });
+        }
+
+        return Ok(new { message = "If an account exists for this email, a reset link has been sent." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest(new { message = "Token and new password are required." });
+        }
+
+        if (request.NewPassword.Length < 6)
+        {
+            return BadRequest(new { message = "New password must be at least 6 characters." });
+        }
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token);
+        if (user == null)
+        {
+            return BadRequest(new { message = "Invalid or expired reset link." });
+        }
+
+        if (user.PasswordResetTokenExpiresAt < DateTime.UtcNow)
+        {
+            return BadRequest(new { message = "Invalid or expired reset link." });
+        }
+
+        if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+        {
+            return BadRequest(new { message = "New password must be different from the current password." });
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.PasswordResetToken = null;
+        user.PasswordResetTokenExpiresAt = null;
+        user.EmailConfirmed = true;
+        await _context.SaveChangesAsync();
+
+        SendPasswordChangedNotificationInBackground(user.Email, user.FullName);
+
+        return Ok(new { message = "Password reset successfully. You can now sign in." });
+    }
+
     [HttpPost("verify-email")]
     public async Task<ActionResult> VerifyEmail(VerifyEmailRequest request)
     {
