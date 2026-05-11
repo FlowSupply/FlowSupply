@@ -230,8 +230,29 @@ tbody tr:hover {
   background-color: #10b981;
 }
 
+.status-delivered {
+  background-color: #2563eb;
+}
+
 .status-rejected {
   background-color: #ef4444;
+}
+
+.repeat-btn {
+  border: none;
+  border-radius: 999px;
+  background: #e0ecff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.repeat-btn:hover {
+  background: #c7dbff;
+  color: #1e40af;
 }
 
 .purple-icon {

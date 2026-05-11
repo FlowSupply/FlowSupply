@@ -235,6 +235,7 @@
   display: block;
   position: relative;
   width: 480px;
+  max-width: calc(100vw - 32px);
   padding: 28px;
   border-radius: 20px;
   background: white;
@@ -1192,6 +1193,10 @@
 
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
+  .intro {
+    padding: 24px 16px 14px;
+  }
+
   .cards {
     display: flex;
     flex-direction: column;
@@ -1199,10 +1204,12 @@
     padding: 0 16px;
     justify-content: unset;
     width: 100%;
+    max-width: 100%;
   }
 
   .card1, .card2, .card3, .card4 {
     max-width: 100%;
+    width: 100%;
     padding: 14px;
     gap: 12px;
   }
@@ -1225,11 +1232,24 @@
 
   .bottom-row {
     flex-direction: column;
-    width: 95%;
+    width: calc(100% - 32px);
+    max-width: 100%;
   }
 
   .chart-card,
   .late-deliveries-card {
-    width: 95%;
+    width: calc(100% - 32px);
+    max-width: 100%;
+  }
+
+  .chart-container,
+  .line-chart-container {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .line-chart-wrapper,
+  .chart {
+    min-width: 0;
   }
 }

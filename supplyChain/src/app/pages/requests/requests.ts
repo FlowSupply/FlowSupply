@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-export type RequestStatus = 'Pending' | 'Approved' | 'Rejected';
+export type RequestStatus = 'Pending' | 'Approved' | 'Delivered' | 'Rejected';
 export type RequestPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 
 export interface PurchaseRequest {
@@ -77,6 +77,27 @@ export class Requests implements OnInit {
       });
   }
 
+  repeatRequest(request: PurchaseRequest) {
+    const body = {
+      productName: request.productName,
+      quantity: request.quantity,
+      reason: request.reason,
+      priority: request.priority
+    };
+
+    this.http.post<PurchaseRequest>('http://localhost:5090/api/requests', body, { headers: this.getHeaders() })
+      .subscribe({
+        next: (created) => {
+          this.requests.unshift(created);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error repeating request:', err);
+          alert('Failed to repeat request.');
+        }
+      });
+  }
+
   openCreateRequestModal() { this.isModalOpen = true; }
 
   closeCreateRequestModal() {
@@ -90,5 +111,5 @@ export class Requests implements OnInit {
 
   get totalCount()    { return this.requests.length; }
   get pendingCount()  { return this.requests.filter(r => r.status === 'Pending').length; }
-  get approvedCount() { return this.requests.filter(r => r.status === 'Approved').length; }
+  get approvedCount() { return this.requests.filter(r => r.status === 'Approved' || r.status === 'Delivered').length; }
 }

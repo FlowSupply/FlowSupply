@@ -123,6 +123,7 @@
             <th>Reason</th>
             <th>Date</th>
             <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -147,10 +148,19 @@
                     [ngClass]="{
                       'status-pending':  r.status === 'Pending',
                       'status-approved': r.status === 'Approved',
+                      'status-delivered': r.status === 'Delivered',
                       'status-rejected': r.status === 'Rejected'
                     }">
                 {{ r.status }}
               </span>
+            </td>
+            <td>
+              <button
+                class="repeat-btn"
+                *ngIf="r.status === 'Delivered'"
+                (click)="repeatRequest(r)">
+                Repeat
+              </button>
             </td>
           </tr>
         </tbody>
