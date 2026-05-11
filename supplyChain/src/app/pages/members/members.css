@@ -274,9 +274,11 @@ td {
   border-radius: 16px;
   width: 480px;
   max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 8px 40px rgba(0,0,0,0.15);
   animation: slideUp 0.2s ease;
-  overflow: hidden;
+  margin: auto;
 }
 
 @keyframes slideUp {
@@ -290,7 +292,6 @@ td {
   gap: 14px;
   padding: 24px 24px 20px;
   border-bottom: 1px solid #f3f4f6;
-  position: relative;
 }
 
 .modal-icon {
@@ -309,16 +310,19 @@ td {
 .modal-subtitle { font-size: 13px; color: #9ca3af; margin: 0; }
 
 .modal-close {
-  position: absolute;
-  top: 20px; right: 20px;
+  margin-left: auto;
   background: #f3f4f6;
   border: none;
   border-radius: 8px;
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: #6b7280;
   transition: background 0.15s;
+  flex-shrink: 0;
 }
 .modal-close:hover { background: #e5e7eb; }
 
@@ -390,14 +394,21 @@ td {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
   background: #f0fdf4;
   border-radius: 12px;
   border: 1px solid #bbf7d0;
   color: #16a34a;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 15px;
+  text-align: center;
+  min-height: 160px;
+}
+
+.result-success p {
+  margin: 0;
 }
 
 .result-item {
