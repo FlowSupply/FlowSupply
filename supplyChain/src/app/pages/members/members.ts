@@ -26,7 +26,7 @@ export class Members implements OnInit {
   isInviteModalOpen = false;
   inviteEmail = '';
   inviteRole = 'Employee';
-  inviteResult: { shortCode: string; inviteLink: string } | null = null;
+  inviteResult: boolean = false;
   inviteLoading = false;
   inviteError = '';
   
@@ -84,36 +84,36 @@ export class Members implements OnInit {
     this.isInviteModalOpen = true;
     this.inviteEmail = '';
     this.inviteRole  = 'Employee';
-    this.inviteResult = null;
+    this.inviteResult = false;
     this.inviteError  = '';
   }
 
   closeInviteModal() {
     this.isInviteModalOpen = false;
-    this.inviteResult = null;
+    this.inviteResult = false;
   }
 
   sendInvite() {
-    if (!this.inviteEmail) { this.inviteError = 'Email is required.'; return; }
-    this.inviteLoading = true;
-    this.inviteError   = '';
+  if (!this.inviteEmail) { this.inviteError = 'Email is required.'; return; }
+  this.inviteLoading = true;
+  this.inviteError   = '';
 
-    this.http.post<any>('http://localhost:5090/api/members/invite',
-      { email: this.inviteEmail, role: this.inviteRole },
-      { headers: this.getHeaders() }
-    ).subscribe({
-      next: (res) => {
-        this.inviteResult  = { shortCode: res.shortCode, inviteLink: res.inviteLink };
-        this.inviteLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.inviteError   = err.error || 'Failed to send invite.';
-        this.inviteLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+  this.http.post<any>('http://localhost:5090/api/members/invite',
+    { email: this.inviteEmail, role: this.inviteRole },
+    { headers: this.getHeaders() }
+  ).subscribe({
+    next: () => {
+      this.inviteResult  = true;
+      this.inviteLoading = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      this.inviteError   = err.error || 'Failed to send invite.';
+      this.inviteLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   changeRole(member: Member, role: string) {
     this.http.patch(
