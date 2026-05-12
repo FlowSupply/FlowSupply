@@ -60,7 +60,7 @@ export const routes: Routes = [
       { path: 'inventory',        component: Inventory },
       { path: 'purchase-requests',component: Requests },
       { path: 'orders',           component: Orders },
-      { path: 'members', component: Members, canActivate: [() => roleGuard(['SuperAdmin'])()] },
+      { path: 'members', component: Members, canActivate: [() => roleGuard(['Admin', 'SuperAdmin'])()] },
 
       // Admin + SuperAdmin only
       { path: 'suppliers',  component: Suppliers,  canActivate: [() => roleGuard(['Admin','SuperAdmin'])()]  },

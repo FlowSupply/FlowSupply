@@ -604,3 +604,129 @@ td {
   .chain-code-actions { width: 100%; }
   .copy-code-btn { flex: 1; justify-content: center; }
 }
+
+/* ── ROLE HISTORY ── */
+.history-section {
+  margin: 0 32px 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+ 
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+ 
+.history-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #ede9fe;
+  color: #7c3aed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+ 
+.history-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 2px;
+}
+ 
+.history-subtitle {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+ 
+.history-empty {
+  padding: 40px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+ 
+.history-list {
+  padding: 8px 0;
+}
+ 
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 24px;
+  border-bottom: 1px solid #f9fafb;
+  transition: background 0.15s;
+}
+ 
+.history-item:last-child { border-bottom: none; }
+.history-item:hover { background: #fafaf9; }
+ 
+.history-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ddd6fe;
+  border: 2px solid #7c3aed;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+ 
+.history-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+ 
+.history-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+ 
+.history-actor {
+  font-weight: 700;
+  color: #111827;
+}
+ 
+.history-target {
+  font-weight: 600;
+  color: #374151;
+}
+ 
+.history-verb {
+  color: #9ca3af;
+  font-size: 12px;
+}
+ 
+.history-date {
+  font-size: 11px;
+  color: #c4b5d0;
+}
+ 
+/* Role pills in history */
+.role-pill {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+}
+ 
+.role-superadmin { background: #ede9fe; color: #6d28d9; }
+.role-admin      { background: #dbeafe; color: #1d4ed8; }
+.role-employee   { background: #f3f4f6; color: #6b7280; }
+ 
+@media (max-width: 768px) {
+  .history-section { margin: 0 16px 24px; }
+}

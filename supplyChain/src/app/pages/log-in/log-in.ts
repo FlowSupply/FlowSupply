@@ -48,34 +48,23 @@ export class LogIn implements OnInit {
 
     this.authService.login(this.email, this.password).subscribe({
       next: (response: any) => {
-        localStorage.setItem('token',         response.token);
-        localStorage.setItem('fullName',      response.fullName);
-        localStorage.setItem('email',         response.email);
-        localStorage.setItem('role',          response.role ?? 'Employee');
-        localStorage.setItem('supplyChainId', response.supplyChainId ?? '');
+      localStorage.setItem('token',    response.token);
+      localStorage.setItem('fullName', response.fullName);
+      localStorage.setItem('email',    response.email);
+      localStorage.setItem('role',     response.role ?? 'Employee');
+      localStorage.setItem('supplyChainId', response.supplyChainId ?? '');
 
-        // Ако има invite token → влез в chain-а
-        if (this.inviteToken) {
-          const headers = new HttpHeaders({ 'Authorization': `Bearer ${response.token}` });
-          this.http.post<any>(
-            'http://localhost:5090/api/chains/join',
-            { token: this.inviteToken },
-            { headers }
-          ).subscribe({
-            next: (res) => {
-              localStorage.setItem('supplyChainId',   res.chainId);
-              localStorage.setItem('supplyChainName', res.name ?? '');
-              localStorage.setItem('role',            res.role);
-              this.router.navigate(['/dashboard']);
-            },
-            error: () => this.router.navigate(['/dashboard'])
-          });
-        } else if (!response.supplyChainId) {
-          this.errorMessage = 'Your account is not linked to a supply chain. Contact your administrator.';
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
-      },
+      if (this.inviteToken) {
+        // Върни се към /join — там JoinChain компонентът ще довърши join-а
+        this.router.navigate(['/join'], {
+          queryParams: { token: this.inviteToken }
+        });
+      } else if (!response.supplyChainId) {
+        this.router.navigate(['/intro'], { queryParams: { join: true } });
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+    },
       error: (err) => {
         this.errorMessage = err.error || 'Invalid email or password.';
       }

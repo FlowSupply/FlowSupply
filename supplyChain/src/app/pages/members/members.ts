@@ -9,7 +9,17 @@ export interface Member {
   email: string;
   role: string;
   status: string;
+  isOwner: boolean;   
 }
+export interface RoleChange {
+  id: number;
+  changedBy: string;
+  target: string;
+  oldRole: string;
+  newRole: string;
+  changedAt: string;
+}
+
 
 @Component({
   selector: 'app-members',
@@ -34,21 +44,32 @@ export class Members implements OnInit {
   chainInviteLink = '';
 
 
+  roleHistory: RoleChange[] = [];
+  currentUserRole = 'Employee';
+  ownerId: number = 0;
+  currentUserIdValue: number = parseInt(localStorage.getItem('userId') || '0');
+
+
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() { this.loadMembers(); this.loadChainInfo();}
+  ngOnInit() { this.loadMembers(); this.loadChainInfo();this.loadRoleHistory();}
 
   private getHeaders() {
     return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` });
   }
 
   loadMembers() {
-    this.http.get<Member[]>('http://localhost:5090/api/members', { headers: this.getHeaders() })
-      .subscribe({
-        next: (data) => { this.members = data; this.cdr.detectChanges(); },
-        error: (err) => console.error('Error loading members:', err)
-      });
-  }
+  this.http.get<any>('http://localhost:5090/api/members', { headers: this.getHeaders() })
+    .subscribe({
+      next: (res) => {
+        this.members = res.members;          // <-- само масива
+        this.currentUserRole = res.myRole || 'Employee';
+        this.ownerId = res.ownerId;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error loading members:', err)
+    });
+}
 
   loadChainInfo() {
   this.http.get<any>('http://localhost:5090/api/chains/invite-link', { headers: this.getHeaders() })
@@ -60,7 +81,15 @@ export class Members implements OnInit {
       },
       error: (err) => console.error('Error loading chain info:', err)
     });
-}
+} 
+  loadRoleHistory() {
+    this.http.get<RoleChange[]>('http://localhost:5090/api/members/role-history', { headers: this.getHeaders() })
+      .subscribe({
+        next: (data) => { this.roleHistory = data; this.cdr.detectChanges(); },
+        error: (err) => console.error('Error loading history:', err)
+      });
+  }
+
 
 
   get filteredMembers() {
@@ -116,15 +145,44 @@ export class Members implements OnInit {
 }
 
   changeRole(member: Member, role: string) {
-    this.http.patch(
-      `http://localhost:5090/api/members/${member.id}/role`,
-      JSON.stringify(role),
-      { headers: this.getHeaders().set('Content-Type', 'application/json') }
-    ).subscribe({
-      next: () => { member.role = role; this.cdr.detectChanges(); },
-      error: (err) => console.error('Error changing role:', err)
-    });
+  // Не позволявай на Admin да промени SuperAdmin
+  if (this.currentUserRole === 'Admin' && member.role === 'SuperAdmin') return;
+  // Не позволявай на Admin да присвоява SuperAdmin
+  if (this.currentUserRole === 'Admin' && role === 'SuperAdmin') return;
+ 
+  this.http.patch(
+    `http://localhost:5090/api/members/${member.id}/role`,
+    JSON.stringify(role),
+    { headers: this.getHeaders().set('Content-Type', 'application/json') }
+  ).subscribe({
+    next: () => {
+      member.role = role;
+      this.loadRoleHistory(); // презареди историята
+      this.cdr.detectChanges();
+    },
+    error: (err) => console.error('Error changing role:', err)
+  });
+}
+ 
+ getRoleOptions(member: Member): string[] {
+  if (member.isOwner) return ['SuperAdmin']; // owner вижда само SuperAdmin
+  if (this.currentUserRole === 'SuperAdmin') return ['Employee', 'Admin'];
+  if (this.currentUserRole === 'Admin' && member.role !== 'SuperAdmin') return ['Employee', 'Admin'];
+  return [member.role]; // fallback — покажи текущата роля
+}
+
+canChangeRole(member: Member): boolean {
+  if (member.isOwner) return false;       // никой не може да пипа owner-а
+  if (this.currentUserRole === 'SuperAdmin') return true;
+  if (this.currentUserRole === 'Admin' && member.role !== 'SuperAdmin') return true;
+  return false;
+}
+
+  formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('bg-BG') + ' ' + d.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
   }
+
 
   removeMember(member: Member) {
     if (!confirm(`Remove ${member.fullName} from the chain?`)) return;
@@ -142,4 +200,5 @@ export class Members implements OnInit {
   currentUserId(): number {
     return parseInt(localStorage.getItem('userId') || '0');
   }
+  
 }

@@ -30,8 +30,14 @@ export class Sidenavbar implements OnInit {
 currentRole: string = 'Employee';
  
 // Helpers за template-а:
-get isAdmin()      { return ['Admin','SuperAdmin'].includes(this.currentRole); }
-get isSuperAdmin() { return this.currentRole === 'SuperAdmin'; }
+get isAdmin()      { 
+  const role = localStorage.getItem('role') || 'Employee';
+  return ['Admin', 'SuperAdmin'].includes(role); 
+}
+get isSuperAdmin() { 
+  const role = localStorage.getItem('role') || 'Employee';
+  return role === 'SuperAdmin'; 
+}
  
   setActive(link: string) {
     this.activeLink = link;

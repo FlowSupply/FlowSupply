@@ -33,25 +33,36 @@ public MembersController(AppDbContext db, EmailService email)
 
     // GET api/members — всички членове на chain-а
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var chainId = await GetChainId();
-        if (chainId == null) return BadRequest("No chain.");
+public async Task<IActionResult> GetAll()
+{
+    var chainId = await GetChainId();
+    if (chainId == null) return BadRequest("No chain.");
 
-        var members = await _db.UserSupplyChains
-            .Include(u => u.User)
-            .Where(u => u.SupplyChainId == chainId)
-            .Select(u => new {
-                u.User!.Id,
-                u.User.FullName,
-                u.User.Email,
-                u.Role,
-                status = "active"
-            })
-            .ToListAsync();
+    var requesterId = GetUserId();
+    
+    // Вземи OwnerId на chain-а
+    var chain = await _db.Chains.FindAsync(chainId);
+    var ownerId = chain?.OwnerId;
 
-        return Ok(members);
-    }
+    var members = await _db.UserSupplyChains
+        .Include(u => u.User)
+        .Where(u => u.SupplyChainId == chainId)
+        .Select(u => new {
+            u.User!.Id,
+            u.User.FullName,
+            u.User.Email,
+            u.Role,
+            status = "active",
+            isOwner = u.User.Id == ownerId   // <--ново
+        })
+        .ToListAsync();
+
+    // Върни и текущата роля на логнатия
+    var myRole = (await _db.UserSupplyChains
+        .FirstOrDefaultAsync(u => u.UserId == requesterId && u.SupplyChainId == chainId))?.Role;
+
+    return Ok(new { members, myRole, ownerId });
+}
 
     // POST api/members/invite — изпраща покана
     [HttpPost("invite")]
@@ -96,27 +107,83 @@ public MembersController(AppDbContext db, EmailService email)
     }
 
     // PATCH api/members/{userId}/role — смяна на роля
-    [HttpPatch("{userId}/role")]
-    public async Task<IActionResult> ChangeRole(int userId, [FromBody] string role)
+[HttpPatch("{userId}/role")]
+public async Task<IActionResult> ChangeRole(int userId, [FromBody] string role)
+{
+
+    var chainId = await GetChainId();
+    if (chainId == null) return BadRequest();
+
+    // Owner-ът не може да бъде сменен от никой
+    var chain = await _db.Chains.FindAsync(chainId);
+    if (chain?.OwnerId == userId)
+        return Forbid();
+
+    var requesterId    = GetUserId();
+    var requesterRole  = (await _db.UserSupplyChains
+        .FirstOrDefaultAsync(u => u.UserId == requesterId && u.SupplyChainId == chainId))?.Role;
+
+    var membership = await _db.UserSupplyChains
+        .FirstOrDefaultAsync(u => u.UserId == userId && u.SupplyChainId == chainId);
+    if (membership == null) return NotFound();
+
+    // Правила:
+    // - SuperAdmin може всичко
+    // - Admin не може да промени SuperAdmin
+    if (requesterRole != "SuperAdmin" && membership.Role == "SuperAdmin")
+        return Forbid();
+
+    var allowed = new[] { "Employee", "Admin", "SuperAdmin" };
+    if (!allowed.Contains(role)) return BadRequest("Invalid role.");
+
+    // Admin не може да присвоява SuperAdmin роля
+    if (requesterRole == "Admin" && role == "SuperAdmin")
+        return Forbid();
+
+    var oldRole = membership.Role;
+    membership.Role = role;
+
+    var user = await _db.Users.FindAsync(userId);
+    if (user != null) user.Role = role;
+
+    // Записваме в историята
+    _db.RoleChangeLogs.Add(new RoleChangeLog
+    {
+        ChangedByUserId = requesterId,
+        TargetUserId    = userId,
+        OldRole         = oldRole,
+        NewRole         = role,
+        ChainId         = chainId.Value
+    });
+
+    await _db.SaveChangesAsync();
+    return Ok(new { userId, role });
+}
+
+// GET api/members/role-history
+    [HttpGet("role-history")]
+    public async Task<IActionResult> GetRoleHistory()
     {
         var chainId = await GetChainId();
         if (chainId == null) return BadRequest();
 
-        var allowed = new[] { "Employee", "Admin", "SuperAdmin" };
-        if (!allowed.Contains(role)) return BadRequest("Invalid role.");
+        var history = await _db.RoleChangeLogs
+            .Include(r => r.ChangedByUser)
+            .Include(r => r.TargetUser)
+            .Where(r => r.ChainId == chainId)
+            .OrderByDescending(r => r.ChangedAt)
+            .Take(50)
+            .Select(r => new {
+                r.Id,
+                changedBy   = r.ChangedByUser!.FullName,
+                target      = r.TargetUser!.FullName,
+                r.OldRole,
+                r.NewRole,
+                r.ChangedAt
+            })
+            .ToListAsync();
 
-        var membership = await _db.UserSupplyChains
-            .FirstOrDefaultAsync(u => u.UserId == userId && u.SupplyChainId == chainId);
-        if (membership == null) return NotFound();
-
-        membership.Role = role;
-
-        // Обнови и User.Role
-        var user = await _db.Users.FindAsync(userId);
-        if (user != null) user.Role = role;
-
-        await _db.SaveChangesAsync();
-        return Ok(new { userId, role });
+        return Ok(history);
     }
 
     // DELETE api/members/{userId} — премахване на член
