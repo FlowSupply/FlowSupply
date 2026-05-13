@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SupplyChain.API.Data;
 using SupplyChain.API.Models;
+using SupplyChain.API.Services;
 using System.Security.Claims;
 
 namespace SupplyChain.API.Controllers;
@@ -13,7 +14,13 @@ namespace SupplyChain.API.Controllers;
 public class ChainsController : ControllerBase
 {
     private readonly AppDbContext _db;
-    public ChainsController(AppDbContext db) => _db = db;
+    private readonly ChainSeedService _chainSeedService;
+
+    public ChainsController(AppDbContext db, ChainSeedService chainSeedService)
+    {
+        _db = db;
+        _chainSeedService = chainSeedService;
+    }
 
     private int GetUserId() =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -53,6 +60,7 @@ public class ChainsController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
+        await _chainSeedService.SeedForChainAsync(chain.Id, userId);
 
         return Ok(new { chain.Id, chain.Name, chain.InviteCode, role = "SuperAdmin" });
     }
