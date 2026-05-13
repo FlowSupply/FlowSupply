@@ -315,37 +315,74 @@ public class EmailService
     {
         var html = $@"
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='bg'>
 <head><meta charset='UTF-8'></head>
-<body style='margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;'>
-  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f8fafc;padding:40px 0;'>
+<body style='margin:0;padding:0;background:#f3f0ff;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f3f0ff;padding:40px 0;'>
     <tr>
       <td align='center'>
-        <table width='540' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.10);'>
+        <table width='520' cellpadding='0' cellspacing='0'
+               style='background:#ffffff;border-radius:16px;overflow:hidden;
+                      box-shadow:0 4px 24px rgba(109,40,217,0.10);'>
           <tr>
-            <td style='background:#111827;padding:30px 40px;text-align:center;'>
-              <p style='margin:0;color:#d1d5db;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
-              <h1 style='margin:10px 0 0;color:#ffffff;font-size:24px;font-weight:700;'>Confirm chain change</h1>
+            <td style='background:linear-gradient(135deg,#6d28d9,#7c3aed);
+                       padding:32px 40px;text-align:center;'>
+              <p style='margin:0;color:#e9d5ff;font-size:12px;
+                        letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
+              <h1 style='margin:10px 0 0;color:#ffffff;font-size:26px;font-weight:700;'>
+                Потвърдете преместването
+              </h1>
             </td>
           </tr>
           <tr>
-            <td style='padding:34px 40px;'>
-              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>Hello, {fullName}</p>
-              <p style='margin:0 0 20px;font-size:16px;color:#374151;line-height:1.6;'>
-                You asked to leave <strong>{currentChainName}</strong> and join <strong>{targetChainName}</strong>.
-                Because a person can be in only one chain, this change needs one more confirmation.
+            <td style='padding:36px 40px;'>
+              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>
+                Здравейте, {fullName}
               </p>
+              <p style='margin:0 0 24px;font-size:16px;color:#374151;line-height:1.6;'>
+                Заявихте преместване от supply chain
+                <strong style='color:#6d28d9;'>{currentChainName}</strong>
+                към
+                <strong style='color:#6d28d9;'>{targetChainName}</strong>.
+                Тъй като един потребител може да бъде само в един chain, трябва да потвърдите тази промяна.
+              </p>
+              <table cellpadding='0' cellspacing='0' width='100%'
+                     style='background:#f5f3ff;border-radius:12px;
+                            border:1px solid #ede9fe;margin-bottom:28px;'>
+                <tr>
+                  <td style='padding:16px 20px;'>
+                    <p style='margin:0;font-size:11px;color:#9ca3af;
+                              text-transform:uppercase;letter-spacing:0.08em;'>Нов Supply Chain</p>
+                    <p style='margin:4px 0 0;font-size:18px;font-weight:700;color:#4c1d95;'>
+                      {targetChainName}
+                    </p>
+                  </td>
+                </tr>
+              </table>
               <table cellpadding='0' cellspacing='0' width='100%'>
                 <tr>
                   <td align='center'>
-                    <a href='{confirmationLink}' style='display:inline-block;padding:14px 34px;background:#7c3aed;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:10px;'>
-                      Confirm chain change
+                    <a href='{confirmationLink}'
+                       style='display:inline-block;padding:14px 36px;
+                              background:linear-gradient(135deg,#6d28d9,#7c3aed);
+                              color:#ffffff;font-size:15px;font-weight:600;
+                              text-decoration:none;border-radius:10px;
+                              letter-spacing:0.02em;'>
+                      Потвърди преместването &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style='margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.6;'>
-                This link is valid for 2 hours. If you did not request this change, ignore this email and your current chain will stay unchanged.
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:20px 40px 28px;border-top:1px solid #f3f4f6;text-align:center;'>
+              <p style='margin:0;font-size:12px;color:#9ca3af;line-height:1.6;'>
+                Линкът е валиден 2 часа.<br>
+                Ако не сте заявявали това преместване, просто игнорирайте имейла.
+              </p>
+              <p style='margin:12px 0 0;font-size:11px;color:#c4b5d0;'>
+                &copy; 2026 FlowSupply. Всички права запазени.
               </p>
             </td>
           </tr>
@@ -356,7 +393,7 @@ public class EmailService
 </body>
 </html>";
 
-        return SendHtmlEmailAsync(toEmail, $"Confirm transfer to {targetChainName} - FlowSupply", html);
+        return SendHtmlEmailAsync(toEmail, $"Потвърждение за преместване към {targetChainName} — FlowSupply", html);
     }
 
     private async Task SendHtmlEmailAsync(string toEmail, string subject, string html)

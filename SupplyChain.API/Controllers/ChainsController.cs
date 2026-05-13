@@ -38,8 +38,6 @@ public class ChainsController : ControllerBase
             return BadRequest("Name is required.");
 
         var userId = GetUserId();
-        if (await HasAnyMembership(userId))
-            return Conflict(new { code = "AlreadyInChain", message = "You are already in a chain." });
 
         var chain = new Chain
         {
@@ -51,7 +49,7 @@ public class ChainsController : ControllerBase
             OwnerId     = userId
         };
 
-        _db.Chains.Add(chain);  // FIX 1: _db.Chain → _db.Chains
+        _db.Chains.Add(chain);  // FIX 1: _db.Chain в†’ _db.Chains
 
         _db.UserSupplyChains.Add(new UserSupplyChain
         {
@@ -78,7 +76,7 @@ public async Task<IActionResult> Join([FromBody] JoinChainDto dto)
 {
     var userId = GetUserId();
 
-    // Ако имаме token → намери поканата
+    // РђРєРѕ РёРјР°РјРµ token в†’ РЅР°РјРµСЂРё РїРѕРєР°РЅР°С‚Р°
     if (!string.IsNullOrWhiteSpace(dto.Token))
     {
         if (!Guid.TryParse(dto.Token, out var tokenGuid))
@@ -94,12 +92,12 @@ public async Task<IActionResult> Join([FromBody] JoinChainDto dto)
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
         if (!string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
-            return Forbid();
+            return BadRequest(new { code = "InviteEmailMismatch", message = "Тази покана е за друг имейл адрес. Моля, влезте с правилния акаунт." });
 
         return await JoinChain(userId, invite.ChainId, invite.Role, invite);
     }
 
-    // Иначе — с код
+    // РРЅР°С‡Рµ вЂ” СЃ РєРѕРґ
     var code = dto.Code;
     if (string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(dto.Link))
     {
@@ -132,10 +130,11 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         var targetChain = await _db.Chains.FindAsync(chainId);
         var currentChain = currentMembership?.SupplyChain
             ?? (user?.SupplyChainId == null ? null : await _db.Chains.FindAsync(user.SupplyChainId.Value));
+
         return Conflict(new
         {
             code = "ChainTransferRequired",
-            message = "You are already in a chain. Confirm if you want to switch chains.",
+            message = "Вече сте в chain. Потвърдете, ако искате да се преместите.",
             currentChainId = currentMembership?.SupplyChainId ?? user!.SupplyChainId,
             currentChainName = currentChain?.Name,
             targetChainId = chainId,
@@ -174,10 +173,8 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
 
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
-
-        var normalizedEmail = user.Email.ToLower().Trim();
-        if (!string.Equals(invite.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
-            return Forbid();
+        if (!string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { code = "InviteEmailMismatch", message = "Тази покана е за друг имейл адрес. Моля, влезте с правилния акаунт." });
 
         var currentMembership = await _db.UserSupplyChains
             .Include(u => u.SupplyChain)
@@ -187,18 +184,18 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         if (currentMembership?.SupplyChainId == invite.ChainId || user.SupplyChainId == invite.ChainId)
             return BadRequest("Already a member.");
 
-        var transferToken = CreateTransferToken(invite.Id, userId, DateTime.UtcNow.AddHours(2));
         var baseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
-        var transferLink = $"{baseUrl.TrimEnd('/')}/join?transferToken={Uri.EscapeDataString(transferToken)}";
+        var transferToken = CreateTransferToken(invite.Id, userId, DateTime.UtcNow.AddHours(2));
+        var confirmationLink = $"{baseUrl.TrimEnd('/')}/join?transferToken={Uri.EscapeDataString(transferToken)}";
         var currentChain = currentMembership?.SupplyChain
             ?? (user.SupplyChainId == null ? null : await _db.Chains.FindAsync(user.SupplyChainId.Value));
 
         await _email.SendChainTransferConfirmationEmailAsync(
             user.Email,
             user.FullName,
-            currentChain?.Name ?? "your current chain",
-            invite.Chain?.Name ?? "the new chain",
-            transferLink);
+            currentChain?.Name ?? "текущия chain",
+            invite.Chain?.Name ?? "новия chain",
+            confirmationLink);
 
         return Ok(new { message = "Confirmation email sent." });
     }
@@ -220,14 +217,13 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
         if (!string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
-            return Forbid();
+            return BadRequest(new { code = "InviteEmailMismatch", message = "Тази покана е за друг имейл адрес. Моля, влезте с правилния акаунт." });
 
         var memberships = await _db.UserSupplyChains
             .Where(u => u.UserId == userId)
             .ToListAsync();
 
-        var sameChainMembership = memberships.FirstOrDefault(u => u.SupplyChainId == invite.ChainId);
-        if (sameChainMembership != null)
+        if (memberships.Any(u => u.SupplyChainId == invite.ChainId))
             return BadRequest("Already a member.");
 
         _db.UserSupplyChains.RemoveRange(memberships);
@@ -253,7 +249,7 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
     {
         var userId = GetUserId();
         var membership = await _db.UserSupplyChains
-            .Include(u => u.SupplyChain)  // FIX 3: .Include(u => u.Chain) → .Include(u => u.SupplyChain)
+            .Include(u => u.SupplyChain)  // FIX 3: .Include(u => u.Chain) в†’ .Include(u => u.SupplyChain)
             .FirstOrDefaultAsync(u => u.UserId == userId);
 
         if (membership == null) return NotFound();
@@ -271,20 +267,11 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         return $"{part()}-{part()}-{part()}";
     }
 
-    private async Task<bool> HasAnyMembership(int userId)
-    {
-        var user = await _db.Users.FindAsync(userId);
-        if (user?.SupplyChainId != null) return true;
-
-        return await _db.UserSupplyChains.AnyAsync(u => u.UserId == userId);
-    }
-
     private string CreateTransferToken(Guid inviteId, int userId, DateTime expiresAt)
     {
         var expiresTicks = expiresAt.ToUniversalTime().Ticks;
         var payload = $"{inviteId:N}.{userId}.{expiresTicks}";
-        var signature = Sign(payload);
-        return $"{Base64UrlEncode(payload)}.{signature}";
+        return $"{Base64UrlEncode(payload)}.{Sign(payload)}";
     }
 
     private (Guid InviteId, int UserId)? ValidateTransferToken(string? token)
@@ -295,10 +282,11 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         if (parts.Length != 2) return null;
 
         var payload = Base64UrlDecode(parts[0]);
-        var expectedSignature = Encoding.UTF8.GetBytes(Sign(payload ?? ""));
+        if (payload == null) return null;
+
+        var expectedSignature = Encoding.UTF8.GetBytes(Sign(payload));
         var providedSignature = Encoding.UTF8.GetBytes(parts[1]);
-        if (payload == null ||
-            expectedSignature.Length != providedSignature.Length ||
+        if (expectedSignature.Length != providedSignature.Length ||
             !CryptographicOperations.FixedTimeEquals(expectedSignature, providedSignature))
         {
             return null;
@@ -307,7 +295,7 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         var values = payload.Split('.');
         if (values.Length != 3 ||
             !Guid.TryParseExact(values[0], "N", out var inviteId) ||
-            !int.TryParse(values[1], out var userId) ||
+            !int.TryParse(values[1], out var tokenUserId) ||
             !long.TryParse(values[2], out var expiresTicks))
         {
             return null;
@@ -316,7 +304,7 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         if (new DateTime(expiresTicks, DateTimeKind.Utc) < DateTime.UtcNow)
             return null;
 
-        return (inviteId, userId);
+        return (inviteId, tokenUserId);
     }
 
     private string Sign(string value)

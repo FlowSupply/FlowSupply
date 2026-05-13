@@ -11,7 +11,7 @@ import { apiUrl } from '../../services/api.config';
   template: `
     <div class="join-page">
       <div class="join-panel">
-        <div *ngIf="loading" class="join-loading">Joining chain...</div>
+        <div *ngIf="loading" class="join-loading">Присъединяване към chain...</div>
         <div *ngIf="error" class="join-error">{{ error }}</div>
         <div *ngIf="success" class="join-success">{{ successMessage }}</div>
       </div>
@@ -19,20 +19,21 @@ import { apiUrl } from '../../services/api.config';
       <div class="modal-overlay" *ngIf="showTransferModal">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
           <div class="modal-icon">!</div>
-          <h2 id="transfer-title">You are already in a chain</h2>
+          <h2 id="transfer-title">Вече сте в chain</h2>
           <p>
-            You are currently in <strong>{{ currentChainName }}</strong>.
-            Do you want to leave it and join <strong>{{ targetChainName }}</strong>?
+            В момента сте в <strong>{{ currentChainName }}</strong>.
+            Сигурни ли сте, че искате да го напуснете и да се преместите в
+            <strong>{{ targetChainName }}</strong>?
           </p>
           <p class="modal-note">
-            If you continue, we will send you an email. The chain change happens only after you confirm from that email.
+            След потвърждение ще получите имейл. Преместването ще стане чак след като натиснете линка в него.
           </p>
           <div class="modal-actions">
             <button class="btn-secondary" type="button" (click)="cancelTransfer()" [disabled]="transferLoading">
-              Stay in current chain
+              Оставам тук
             </button>
             <button class="btn-primary" type="button" (click)="requestTransfer()" [disabled]="transferLoading">
-              {{ transferLoading ? 'Sending...' : 'Send confirmation email' }}
+              {{ transferLoading ? 'Изпращане...' : 'Да, изпрати имейл' }}
             </button>
           </div>
         </div>
@@ -70,7 +71,7 @@ import { apiUrl } from '../../services/api.config';
     }
 
     .modal {
-      width: min(460px, 100%);
+      width: min(480px, 100%);
       background: #ffffff;
       border-radius: 8px;
       padding: 28px;
@@ -143,12 +144,12 @@ export class JoinChain implements OnInit {
   loading = true;
   error = '';
   success = false;
-  successMessage = 'Success. Redirecting...';
+  successMessage = 'Успешно! Пренасочване...';
   showTransferModal = false;
   transferLoading = false;
   inviteToken = '';
-  currentChainName = 'your current chain';
-  targetChainName = 'the invited chain';
+  currentChainName = 'текущия chain';
+  targetChainName = 'новия chain';
 
   constructor(
     private route: ActivatedRoute,
@@ -162,13 +163,12 @@ export class JoinChain implements OnInit {
     const email = this.route.snapshot.queryParamMap.get('email') || '';
 
     if (!token && !transferToken) {
-      this.error = 'Invalid link.';
+      this.error = 'Невалиден линк.';
       this.loading = false;
       return;
     }
 
     const authToken = localStorage.getItem('token');
-
     if (!authToken) {
       this.router.navigate(['/login'], {
         queryParams: transferToken ? { transferToken, email } : { token, email }
@@ -190,9 +190,7 @@ export class JoinChain implements OnInit {
       { headers }
     ).subscribe({
       next: (res) => {
-        localStorage.setItem('supplyChainId', res.chainId);
-        localStorage.setItem('supplyChainName', res.name ?? '');
-        localStorage.setItem('role', res.role);
+        this.applyJoinedChain(res);
         this.success = true;
         this.loading = false;
         setTimeout(() => this.router.navigate(['/dashboard']), 1200);
@@ -206,7 +204,7 @@ export class JoinChain implements OnInit {
           return;
         }
 
-        this.error = this.getErrorMessage(err, 'Invalid or expired link.');
+        this.error = this.getErrorMessage(err, 'Невалиден или изтекъл линк.');
         this.loading = false;
       }
     });
@@ -215,7 +213,7 @@ export class JoinChain implements OnInit {
   requestTransfer() {
     const authToken = localStorage.getItem('token');
     if (!authToken || !this.inviteToken) {
-      this.error = 'Invalid link.';
+      this.error = 'Невалиден линк.';
       this.showTransferModal = false;
       return;
     }
@@ -231,12 +229,12 @@ export class JoinChain implements OnInit {
         this.transferLoading = false;
         this.showTransferModal = false;
         this.success = true;
-        this.successMessage = 'Confirmation email sent. Open it to finish changing chains.';
+        this.successMessage = 'Изпратихме имейл за потвърждение. Отворете го, за да завършите преместването.';
       },
       error: (err) => {
         this.transferLoading = false;
         this.showTransferModal = false;
-        this.error = this.getErrorMessage(err, 'Could not send confirmation email.');
+        this.error = this.getErrorMessage(err, 'Не успяхме да изпратим имейл за потвърждение.');
       }
     });
   }
@@ -254,18 +252,22 @@ export class JoinChain implements OnInit {
       { headers }
     ).subscribe({
       next: (res) => {
-        localStorage.setItem('supplyChainId', res.chainId);
-        localStorage.setItem('supplyChainName', res.name ?? '');
-        localStorage.setItem('role', res.role);
+        this.applyJoinedChain(res);
         this.success = true;
         this.loading = false;
         setTimeout(() => this.router.navigate(['/dashboard']), 1200);
       },
       error: (err) => {
-        this.error = this.getErrorMessage(err, 'Invalid or expired transfer confirmation.');
+        this.error = this.getErrorMessage(err, 'Невалидно или изтекло потвърждение.');
         this.loading = false;
       }
     });
+  }
+
+  private applyJoinedChain(res: any) {
+    localStorage.setItem('supplyChainId', res.chainId);
+    localStorage.setItem('supplyChainName', res.name ?? '');
+    localStorage.setItem('role', res.role);
   }
 
   private getErrorMessage(err: any, fallback: string): string {
