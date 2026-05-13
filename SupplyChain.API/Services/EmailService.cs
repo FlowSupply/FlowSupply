@@ -306,6 +306,59 @@ public class EmailService
         await SendHtmlEmailAsync(toEmail, $"Покана към {chainName} — FlowSupply", html);
     }
 
+    public Task SendChainTransferConfirmationEmailAsync(
+        string toEmail,
+        string fullName,
+        string currentChainName,
+        string targetChainName,
+        string confirmationLink)
+    {
+        var html = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head><meta charset='UTF-8'></head>
+<body style='margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f8fafc;padding:40px 0;'>
+    <tr>
+      <td align='center'>
+        <table width='540' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.10);'>
+          <tr>
+            <td style='background:#111827;padding:30px 40px;text-align:center;'>
+              <p style='margin:0;color:#d1d5db;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;'>FlowSupply</p>
+              <h1 style='margin:10px 0 0;color:#ffffff;font-size:24px;font-weight:700;'>Confirm chain change</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:34px 40px;'>
+              <p style='margin:0 0 12px;font-size:16px;color:#374151;line-height:1.6;'>Hello, {fullName}</p>
+              <p style='margin:0 0 20px;font-size:16px;color:#374151;line-height:1.6;'>
+                You asked to leave <strong>{currentChainName}</strong> and join <strong>{targetChainName}</strong>.
+                Because a person can be in only one chain, this change needs one more confirmation.
+              </p>
+              <table cellpadding='0' cellspacing='0' width='100%'>
+                <tr>
+                  <td align='center'>
+                    <a href='{confirmationLink}' style='display:inline-block;padding:14px 34px;background:#7c3aed;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:10px;'>
+                      Confirm chain change
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style='margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.6;'>
+                This link is valid for 2 hours. If you did not request this change, ignore this email and your current chain will stay unchanged.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
+
+        return SendHtmlEmailAsync(toEmail, $"Confirm transfer to {targetChainName} - FlowSupply", html);
+    }
+
     private async Task SendHtmlEmailAsync(string toEmail, string subject, string html)
     {
         var clientId     = _config["Gmail:ClientId"]!;

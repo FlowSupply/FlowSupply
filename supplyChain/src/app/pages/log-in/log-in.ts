@@ -21,6 +21,7 @@ export class LogIn implements OnInit {
   isSubmitting = false;
 
   inviteToken  = '';
+  transferToken = '';
   emailLocked  = false;
 
   constructor(
@@ -33,6 +34,7 @@ export class LogIn implements OnInit {
 
   ngOnInit() {
     this.inviteToken = this.route.snapshot.queryParamMap.get('token') || '';
+    this.transferToken = this.route.snapshot.queryParamMap.get('transferToken') || '';
     const emailParam = this.route.snapshot.queryParamMap.get('email') || '';
     if (emailParam) {
       this.email       = decodeURIComponent(emailParam);
@@ -60,7 +62,11 @@ export class LogIn implements OnInit {
         localStorage.setItem('role',          response.role ?? 'Employee');
         localStorage.setItem('supplyChainId', response.supplyChainId ?? '');
 
-        if (this.inviteToken) {
+        if (this.transferToken) {
+          this.router.navigate(['/join'], {
+            queryParams: { transferToken: this.transferToken }
+          });
+        } else if (this.inviteToken) {
           this.router.navigate(['/join'], {
             queryParams: { token: this.inviteToken }
           });
