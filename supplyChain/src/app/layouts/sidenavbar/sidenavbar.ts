@@ -1,5 +1,5 @@
 // 1. Добави OnInit в импортите
-import { Component, OnInit } from '@angular/core'; 
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLinkWithHref, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -12,8 +12,8 @@ import { CommonModule } from '@angular/common';
 // 2. Добави implements OnInit
 export class Sidenavbar implements OnInit {
   activeLink: string = '';
-  isSidebarOpen = false;         
-  isCollapsed = false; 
+  isSidebarOpen = false;
+  isCollapsed = false;
 
   // 3. Создай променливи за потребителя
   currentUserName: string = 'Guest';
@@ -28,18 +28,24 @@ export class Sidenavbar implements OnInit {
   this.currentRole      = localStorage.getItem('role') || 'Employee';
 }
 currentRole: string = 'Employee';
- 
+
 // Helpers за template-а:
-get isAdmin()      { return ['Admin','SuperAdmin'].includes(this.currentRole); }
-get isSuperAdmin() { return this.currentRole === 'SuperAdmin'; }
- 
+get isAdmin()      {
+  const role = localStorage.getItem('role') || 'Employee';
+  return ['Admin', 'SuperAdmin'].includes(role);
+}
+get isSuperAdmin() {
+  const role = localStorage.getItem('role') || 'Employee';
+  return role === 'SuperAdmin';
+}
+
   setActive(link: string) {
     this.activeLink = link;
   }
 
   isActive(url: string) {
     return this.router.url === url;
-  }           
+  }
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
@@ -48,7 +54,7 @@ get isSuperAdmin() { return this.currentRole === 'SuperAdmin'; }
   toggleCollapse() {
     this.isCollapsed = !this.isCollapsed;
   }
-  
+
 
   logout() {
   localStorage.removeItem('token');

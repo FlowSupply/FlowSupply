@@ -141,7 +141,7 @@
         </li>
 
         <!-- MEMBERS — само SuperAdmin -->
-<li *ngIf="isSuperAdmin">
+<li *ngIf="isAdmin">
   <a class="nav-link-custom" routerLink="/members" routerLinkActive="active"
      (click)="isSidebarOpen = false; setActive('members')"
      [class.active]="isActive('/members')">

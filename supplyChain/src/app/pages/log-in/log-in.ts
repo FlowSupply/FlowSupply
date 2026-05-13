@@ -60,26 +60,14 @@ export class LogIn implements OnInit {
         localStorage.setItem('role',          response.role ?? 'Employee');
         localStorage.setItem('supplyChainId', response.supplyChainId ?? '');
 
-        // Ако има invite token → влез в chain-а
         if (this.inviteToken) {
-          const headers = new HttpHeaders({ 'Authorization': `Bearer ${response.token}` });
-          this.http.post<any>(
-            apiUrl('chains/join'),
-            { token: this.inviteToken },
-            { headers }
-          ).subscribe({
-            next: (res) => {
-              localStorage.setItem('supplyChainId',   res.chainId);
-              localStorage.setItem('supplyChainName', res.name ?? '');
-              localStorage.setItem('role',            res.role);
-              this.router.navigate(['/dashboard']);
-            },
-            error: () => this.router.navigate(['/dashboard'])
+          this.router.navigate(['/join'], {
+            queryParams: { token: this.inviteToken }
           });
         } else if (!response.supplyChainId) {
           localStorage.removeItem('supplyChainId');
           localStorage.removeItem('supplyChainName');
-          this.router.navigate(['/intro']);
+          this.router.navigate(['/intro'], { queryParams: { join: true } });
         } else {
           this.router.navigate(['/dashboard']);
         }
