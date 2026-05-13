@@ -1,11 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { EMPTY, Subscription, catchError, interval, startWith, switchMap } from 'rxjs';
 import { apiUrl } from '../../services/api.config';
 
 export interface Member {
-  id: number;
+  id: string;
   fullName: string;
   email: string;
   role: string;
@@ -29,7 +30,7 @@ export interface RoleChange {
   templateUrl: './members.html',
   styleUrl: './members.css',
 })
-export class Members implements OnInit {
+export class Members implements OnInit, OnDestroy {
   members: Member[] = [];
   searchTerm = '';
 
@@ -43,6 +44,9 @@ export class Members implements OnInit {
 
   chainInviteCode = '';
   chainInviteLink = '';
+  private readonly membersRefreshMs = 5000;
+  private membersSubscription?: Subscription;
+  private localPendingInvites: Member[] = [];
 
 
   roleHistory: RoleChange[] = [];
@@ -53,24 +57,70 @@ export class Members implements OnInit {
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() { this.loadMembers(); this.loadChainInfo();this.loadRoleHistory();}
+  ngOnInit() {
+    this.startLiveMembers();
+    this.loadChainInfo();
+    this.loadRoleHistory();
+  }
+
+  ngOnDestroy() {
+    this.membersSubscription?.unsubscribe();
+  }
 
   private getHeaders() {
     return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` });
   }
 
+  private startLiveMembers() {
+    this.membersSubscription = interval(this.membersRefreshMs)
+      .pipe(
+        startWith(0),
+        switchMap(() =>
+          this.http.get<any>(apiUrl('members'), { headers: this.getHeaders() })
+            .pipe(catchError((err) => {
+              console.error('Error loading members:', err);
+              return EMPTY;
+            }))
+        )
+      )
+      .subscribe({ next: (res) => this.applyMembersResponse(res) });
+  }
+
   loadMembers() {
-  this.http.get<any>(apiUrl('members'), { headers: this.getHeaders() })
-    .subscribe({
-      next: (res) => {
-        this.members = Array.isArray(res) ? res : res.members;
-        this.currentUserRole = res.myRole || 'Employee';
-        this.ownerId = res.ownerId;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error loading members:', err)
+    this.http.get<any>(apiUrl('members'), { headers: this.getHeaders() })
+      .subscribe({
+        next: (res) => this.applyMembersResponse(res),
+        error: (err) => console.error('Error loading members:', err)
+      });
+  }
+
+  private applyMembersResponse(res: any) {
+    const apiMembers = ((Array.isArray(res) ? res : res.members) ?? []) as Member[];
+    this.members = this.mergePendingInvites(apiMembers);
+    this.currentUserRole = res.myRole || 'Employee';
+    this.ownerId = res.ownerId;
+    this.cdr.detectChanges();
+  }
+
+  private mergePendingInvites(apiMembers: Member[]): Member[] {
+    const activeEmails = new Set(
+      apiMembers
+        .filter(m => !this.isPendingStatus(m.status))
+        .map(m => m.email.toLowerCase())
+    );
+    const apiPendingEmails = new Set(
+      apiMembers
+        .filter(m => this.isPendingStatus(m.status))
+        .map(m => m.email.toLowerCase())
+    );
+
+    this.localPendingInvites = this.localPendingInvites.filter(pending => {
+      const email = pending.email.toLowerCase();
+      return !activeEmails.has(email) && !apiPendingEmails.has(email);
     });
-}
+
+    return [...this.localPendingInvites, ...apiMembers];
+  }
 
   loadChainInfo() {
   this.http.get<any>(apiUrl('chains/invite-link'), { headers: this.getHeaders() })
@@ -104,7 +154,13 @@ export class Members implements OnInit {
 
   get totalCount()  { return this.members.length; }
   get activeCount() { return this.members.filter(m => m.status === 'active').length; }
+  get pendingCount() { return this.members.filter(m => this.isPendingStatus(m.status)).length; }
   get adminCount()  { return this.members.filter(m => m.role === 'Admin' || m.role === 'SuperAdmin').length; }
+
+  isPendingStatus(status: string | null | undefined): boolean {
+    const normalized = (status || '').toLowerCase();
+    return normalized === 'pending' || normalized === 'awaiting';
+  }
 
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
@@ -135,6 +191,8 @@ export class Members implements OnInit {
       next: (res) => {
         this.inviteResult  = true;
         this.inviteLoading = false;
+        this.addPendingInvite(res?.inviteId);
+        this.loadMembers();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -145,7 +203,25 @@ export class Members implements OnInit {
     });
   }
 
+  private addPendingInvite(inviteId?: string) {
+    const email = this.inviteEmail.toLowerCase().trim();
+    if (!email || this.members.some(m => m.email.toLowerCase() === email && this.isPendingStatus(m.status))) return;
+
+    const pendingInvite = {
+      id: inviteId || `pending-${email}`,
+      fullName: 'Pending invite',
+      email,
+      role: this.inviteRole,
+      status: 'pending',
+      isOwner: false
+    };
+
+    this.localPendingInvites = [pendingInvite, ...this.localPendingInvites];
+    this.members = this.mergePendingInvites(this.members);
+  }
+
   changeRole(member: Member, role: string) {
+  if (this.isPendingStatus(member.status)) return;
   // Не позволявай на Admin да промени SuperAdmin
   if (this.currentUserRole === 'Admin' && member.role === 'SuperAdmin') return;
   // Не позволявай на Admin да присвоява SuperAdmin
@@ -173,6 +249,7 @@ export class Members implements OnInit {
 }
 
 canChangeRole(member: Member): boolean {
+  if (this.isPendingStatus(member.status)) return false;
   if (member.isOwner) return false;       // никой не може да пипа owner-а
   if (this.currentUserRole === 'SuperAdmin') return true;
   if (this.currentUserRole === 'Admin' && member.role !== 'SuperAdmin') return true;
@@ -186,6 +263,7 @@ canChangeRole(member: Member): boolean {
 
 
   removeMember(member: Member) {
+    if (this.isPendingStatus(member.status)) return;
     if (!confirm(`Remove ${member.fullName} from the chain?`)) return;
     this.http.delete(apiUrl(`members/${member.id}`), { headers: this.getHeaders() })
       .subscribe({

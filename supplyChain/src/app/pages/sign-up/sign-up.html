@@ -89,7 +89,7 @@
       <button type="submit" class="btn btn-primary" [disabled]="signUpForm.invalid">Sign Up</button>
 
       <div class="logIn">
-        <p>Already have an account? <a routerLink="/login" class="log-in">Sign in</a></p>
+        <p>Already have an account? <a routerLink="/login" queryParamsHandling="preserve" class="log-in">Sign in</a></p>
       </div>
     </form>
   </div>
