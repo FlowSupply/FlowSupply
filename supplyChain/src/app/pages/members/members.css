@@ -84,10 +84,12 @@
 
 .purple-icon { color: #985BB9; background-color: #985bb920; }
 .green-icon  { color: #4CAF50; background-color: #4caf4f2a; }
+.amber-icon  { color: #b45309; background-color: #f59e0b2a; }
 .pink-icon   { color: #d81ee9; background-color: #d81ee939; }
 
 .stat-purple { background: linear-gradient(135deg, #985bb939, #fff); }
 .stat-green  { background: linear-gradient(135deg, #4caf5039, #fff); }
+.stat-amber  { background: linear-gradient(135deg, #f59e0b39, #fff); }
 .stat-pink   { background: linear-gradient(135deg, #d81ee939, #fff); }
 
 /* ── SEARCH ── */
@@ -205,6 +207,39 @@ td {
   -webkit-appearance: none;
 }
 
+.role-action-select {
+  display: inline-flex;
+  align-items: center;
+  min-width: 96px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+}
+
+.role-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.role-action-select {
+  cursor: pointer;
+  outline: none;
+  appearance: auto;
+}
+
+.role-action-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .role-superadmin { background: #ede9fe; color: #6d28d9; }
 .role-admin      { background: #dbeafe; color: #1d4ed8; }
 .role-employee   { background: #f3f4f6; color: #6b7280; }
@@ -229,6 +264,7 @@ td {
 
 .status-active   { background: #dcfce7; color: #16a34a; }
 .status-invited  { background: #fef3c7; color: #b45309; }
+.status-pending  { background: #fef3c7; color: #b45309; }
 .status-inactive { background: #fee2e2; color: #dc2626; }
 
 /* ── REMOVE BTN ── */

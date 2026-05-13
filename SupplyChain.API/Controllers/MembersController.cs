@@ -29,8 +29,14 @@ public class MembersController : ControllerBase
 
     private async Task<Guid?> GetChainId()
     {
-        var user = await _db.Users.FindAsync(GetUserId());
-        return user?.SupplyChainId;
+        var userId = GetUserId();
+        var user = await _db.Users.FindAsync(userId);
+        if (user?.SupplyChainId != null) return user.SupplyChainId;
+
+        return await _db.UserSupplyChains
+            .Where(m => m.UserId == userId)
+            .Select(m => (Guid?)m.SupplyChainId)
+            .FirstOrDefaultAsync();
     }
 
     // GET api/members — всички членове на chain-а
@@ -42,24 +48,57 @@ public async Task<IActionResult> GetAll()
 
     var requesterId = GetUserId();
 
-    // Вземи OwnerId на chain-а
     var chain = await _db.Chains.FindAsync(chainId);
     var ownerId = chain?.OwnerId;
 
-    var members = await _db.UserSupplyChains
+    var activeRows = await _db.UserSupplyChains
         .Include(u => u.User)
         .Where(u => u.SupplyChainId == chainId)
-        .Select(u => new {
+        .Select(u => new
+        {
             u.User!.Id,
             u.User.FullName,
             u.User.Email,
             u.Role,
-            status = "active",
-            isOwner = u.User.Id == ownerId   // <--ново
+            IsOwner = u.User.Id == ownerId
         })
         .ToListAsync();
 
-    // Върни и текущата роля на логнатия
+    var pendingRows = await _db.ChainInvites
+        .Where(i => i.ChainId == chainId && !i.IsUsed)
+        .OrderByDescending(i => i.CreatedAt)
+        .Select(i => new
+        {
+            i.Id,
+            i.Email,
+            i.Role
+        })
+        .ToListAsync();
+
+    var activeMembers = activeRows.Select(u => new MemberRow(
+        u.Id.ToString(),
+        u.FullName,
+        u.Email,
+        u.Role,
+        "active",
+        u.IsOwner
+    ));
+
+    var pendingMembers = pendingRows.Select(i => new MemberRow(
+        i.Id.ToString(),
+        "Pending invite",
+        i.Email,
+        i.Role,
+        "pending",
+        false
+    ));
+
+    var members = activeMembers
+        .Concat(pendingMembers)
+        .OrderBy(m => m.Status == "pending" ? 0 : 1)
+        .ThenBy(m => m.FullName)
+        .ToList();
+
     var myRole = (await _db.UserSupplyChains
         .FirstOrDefaultAsync(u => u.UserId == requesterId && u.SupplyChainId == chainId))?.Role;
 
@@ -77,14 +116,15 @@ public async Task<IActionResult> GetAll()
         if (chain == null) return NotFound();
 
         // Изтрий стари неизползвани покани за същия имейл
+        var normalizedEmail = dto.Email.ToLower().Trim();
         var old = await _db.ChainInvites
-            .Where(i => i.Email == dto.Email && i.ChainId == chainId && !i.IsUsed)
+            .Where(i => i.Email == normalizedEmail && i.ChainId == chainId && !i.IsUsed)
             .ToListAsync();
         _db.ChainInvites.RemoveRange(old);
 
         var invite = new ChainInvite
         {
-            Email   = dto.Email.ToLower().Trim(),
+            Email   = normalizedEmail,
             ChainId = chainId.Value,
             Role    = dto.Role ?? "Employee"
         };
@@ -93,7 +133,7 @@ public async Task<IActionResult> GetAll()
 
         // Провери дали има акаунт
         var hasAccount = await _db.Users
-            .AnyAsync(u => u.Email == dto.Email.ToLower().Trim());
+            .AnyAsync(u => u.Email == normalizedEmail);
 
         var baseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
         var inviteLink = hasAccount
@@ -214,3 +254,4 @@ public async Task<IActionResult> ChangeRole(int userId, [FromBody] string role)
 }
 
 public record InviteDto(string Email, string? Role);
+public record MemberRow(string Id, string FullName, string Email, string Role, string Status, bool IsOwner);
