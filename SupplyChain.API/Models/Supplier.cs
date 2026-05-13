@@ -23,4 +23,6 @@ public class Supplier
     public string SupplierContactEmail { get; set; } = string.Empty;
     public string SupplierContactPhone { get; set; } = string.Empty;
     public string SupplierAddress { get; set; } = string.Empty;
+    public Guid? SupplyChainId { get; set; }
+    public Chain? SupplyChain { get; set; }
 }

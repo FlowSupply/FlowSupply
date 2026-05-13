@@ -15,4 +15,6 @@ public class PurchaseRequest
 
     public int UserId { get; set; }  
     public User? User { get; set; }
+    public Guid? SupplyChainId { get; set; }
+    public Chain? SupplyChain { get; set; }
 }

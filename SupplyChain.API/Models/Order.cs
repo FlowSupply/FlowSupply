@@ -17,4 +17,6 @@ public class Order
     public DateTime? CancelledAt { get; set; }
 
     public Guid RequestId { get; set; } // връзка към заявката
+    public Guid? SupplyChainId { get; set; }
+    public Chain? SupplyChain { get; set; }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SupplyChain.API.Data;
 using SupplyChain.API.Models;
+using System.Security.Claims;
 
 namespace SupplyChain.API.Controllers;
 
@@ -21,13 +22,22 @@ public class SuppliersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Supplier>>> GetSuppliers()
     {
-        return await _context.Suppliers.ToListAsync();
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        return await _context.Suppliers
+            .Where(s => s.SupplyChainId == chainId)
+            .ToListAsync();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Supplier>> GetSupplier(int id)
     {
-        var supplier = await _context.Suppliers.FindAsync(id);
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var supplier = await _context.Suppliers
+            .FirstOrDefaultAsync(s => s.SupplierId == id && s.SupplyChainId == chainId);
         if (supplier == null) return NotFound();
         return supplier;
     }
@@ -35,11 +45,15 @@ public class SuppliersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Supplier>> CreateSupplier(Supplier supplier)
     {
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
         // Когато се създава нов, му даваме дефолтни статистики (AI-а ще ги обновява по-късно)
         supplier.SupplierStatus = "Active";
         supplier.SupplierRating = "0.0";
         supplier.SupplierSupplies = "0";
         supplier.SupplierAvrLatency = 0;
+        supplier.SupplyChainId = chainId;
 
         _context.Suppliers.Add(supplier);
         await _context.SaveChangesAsync();
@@ -51,7 +65,25 @@ public class SuppliersController : ControllerBase
     public async Task<IActionResult> UpdateSupplier(int id, Supplier supplier)
     {
         if (id != supplier.SupplierId) return BadRequest();
-        _context.Entry(supplier).State = EntityState.Modified;
+
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var existing = await _context.Suppliers
+            .FirstOrDefaultAsync(s => s.SupplierId == id && s.SupplyChainId == chainId);
+        if (existing == null) return NotFound();
+
+        existing.SupplierName = supplier.SupplierName;
+        existing.SupplierCategory = supplier.SupplierCategory;
+        existing.SupplierRating = supplier.SupplierRating;
+        existing.SupplierSupplies = supplier.SupplierSupplies;
+        existing.SupplierAvrLatency = supplier.SupplierAvrLatency;
+        existing.SupplierStatus = supplier.SupplierStatus;
+        existing.SupplierContactPerson = supplier.SupplierContactPerson;
+        existing.SupplierContactEmail = supplier.SupplierContactEmail;
+        existing.SupplierContactPhone = supplier.SupplierContactPhone;
+        existing.SupplierAddress = supplier.SupplierAddress;
+
         await _context.SaveChangesAsync();
         return NoContent();
     }
@@ -59,10 +91,23 @@ public class SuppliersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSupplier(int id)
     {
-        var supplier = await _context.Suppliers.FindAsync(id);
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var supplier = await _context.Suppliers
+            .FirstOrDefaultAsync(s => s.SupplierId == id && s.SupplyChainId == chainId);
         if (supplier == null) return NotFound();
         _context.Suppliers.Remove(supplier);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    private async Task<Guid?> GetCurrentChainId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return null;
+
+        var user = await _context.Users.FindAsync(int.Parse(userId));
+        return user?.SupplyChainId;
     }
 }

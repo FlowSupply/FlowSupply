@@ -47,6 +47,30 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(s => s.OwnerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.SupplyChain)
+            .WithMany()
+            .HasForeignKey(p => p.SupplyChainId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.SupplyChain)
+            .WithMany()
+            .HasForeignKey(o => o.SupplyChainId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PurchaseRequest>()
+            .HasOne(r => r.SupplyChain)
+            .WithMany()
+            .HasForeignKey(r => r.SupplyChainId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Supplier>()
+            .HasOne(s => s.SupplyChain)
+            .WithMany()
+            .HasForeignKey(s => s.SupplyChainId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
 }

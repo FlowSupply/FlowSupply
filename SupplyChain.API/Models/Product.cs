@@ -11,4 +11,6 @@ public class Product
     public string ProductCategory { get; set; } = string.Empty;
     public int ProductAvailability { get; set; } = 0;
     public int ProductMinimum { get; set; } = 0;
+    public Guid? SupplyChainId { get; set; }
+    public Chain? SupplyChain { get; set; }
 }

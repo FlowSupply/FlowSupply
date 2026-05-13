@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SupplyChain.API.Data;
+using System.Security.Claims;
 
 namespace SupplyChain.API.Controllers;
 
@@ -16,9 +17,18 @@ public class DashboardController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        var orders    = await _db.Orders.ToListAsync();
-        var products  = await _db.Products.ToListAsync();
-        var requests  = await _db.PurchaseRequests.ToListAsync();
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var orders = await _db.Orders
+            .Where(o => o.SupplyChainId == chainId)
+            .ToListAsync();
+        var products = await _db.Products
+            .Where(p => p.SupplyChainId == chainId)
+            .ToListAsync();
+        var requests = await _db.PurchaseRequests
+            .Where(r => r.SupplyChainId == chainId)
+            .ToListAsync();
 
         var lowStock = products
             .Where(p => p.ProductMinimum > 0 && p.ProductAvailability < p.ProductMinimum)
@@ -61,5 +71,14 @@ public class DashboardController : ControllerBase
             lateDeliveries = lateOrders,
             monthlyOrders  = monthlyOrders
         });
+    }
+
+    private async Task<Guid?> GetCurrentChainId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return null;
+
+        var user = await _db.Users.FindAsync(int.Parse(userId));
+        return user?.SupplyChainId;
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SupplyChain.API.Data;
 using SupplyChain.API.Models;
+using System.Security.Claims;
 
 namespace SupplyChain.API.Controllers;
 
@@ -14,20 +15,27 @@ public class OrdersController : ControllerBase
     private readonly AppDbContext _db;
     public OrdersController(AppDbContext db) => _db = db;
 
-    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var orders = await _db.Orders.OrderByDescending(o => o.CreatedAt).ToListAsync();
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var orders = await _db.Orders
+            .Where(o => o.SupplyChainId == chainId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
         return Ok(orders);
     }
 
     // Advance status: Pending -> Confirmed -> Shipped -> Delivered
-    [AllowAnonymous]
     [HttpPatch("{id}/advance")]
     public async Task<IActionResult> Advance(Guid id)
     {
-        var order = await _db.Orders.FindAsync(id);
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == id && o.SupplyChainId == chainId);
         if (order == null) return NotFound();
 
         var nextStatus = order.Status switch
@@ -44,11 +52,13 @@ public class OrdersController : ControllerBase
         return Ok(order);
     }
 
-    [AllowAnonymous]
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
     {
-        var order = await _db.Orders.FindAsync(id);
+        var chainId = await GetCurrentChainId();
+        if (chainId == null) return BadRequest("No chain.");
+
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == id && o.SupplyChainId == chainId);
         if (order == null) return NotFound();
 
         var nextStatus = NormalizeStatus(request.Status);
@@ -130,7 +140,7 @@ public class OrdersController : ControllerBase
     {
         var orderProductName = NormalizeProductName(order.ProductName);
         var product = await _db.Products
-            .FirstOrDefaultAsync(p => p.ProductName.ToLower().Trim() == orderProductName);
+            .FirstOrDefaultAsync(p => p.SupplyChainId == order.SupplyChainId && p.ProductName.ToLower().Trim() == orderProductName);
 
         if (product == null)
         {
@@ -140,7 +150,8 @@ public class OrdersController : ControllerBase
                 ProductSKU = GenerateProductSku(order.ProductName),
                 ProductCategory = "Requested Items",
                 ProductAvailability = 0,
-                ProductMinimum = Math.Max(order.Quantity, 1)
+                ProductMinimum = Math.Max(order.Quantity, 1),
+                SupplyChainId = order.SupplyChainId
             };
 
             _db.Products.Add(product);
@@ -159,7 +170,8 @@ public class OrdersController : ControllerBase
             return;
         }
 
-        var request = await _db.PurchaseRequests.FindAsync(order.RequestId);
+        var request = await _db.PurchaseRequests
+            .FirstOrDefaultAsync(r => r.RequestId == order.RequestId && r.SupplyChainId == order.SupplyChainId);
         if (request != null)
         {
             request.Status = "Delivered";
@@ -180,5 +192,14 @@ public class OrdersController : ControllerBase
         }
 
         return $"{lettersAndDigits}-AUTO";
+    }
+
+    private async Task<Guid?> GetCurrentChainId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return null;
+
+        var user = await _db.Users.FindAsync(int.Parse(userId));
+        return user?.SupplyChainId;
     }
 }
