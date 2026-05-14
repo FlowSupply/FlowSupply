@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using SupplyChain.API.Data;
 using SupplyChain.API.Models;
 using SupplyChain.API.Services;
-using System.Security.Cryptography;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SupplyChain.API.Controllers;
@@ -41,21 +41,20 @@ public class ChainsController : ControllerBase
 
         var chain = new Chain
         {
-            Name        = dto.Name,
-            Industry    = dto.Industry ?? "",
+            Name = dto.Name,
+            Industry = dto.Industry ?? "",
             Description = dto.Description ?? "",
-            Visibility  = dto.Visibility ?? "private",
-            InviteCode  = GenerateCode(),
-            OwnerId     = userId
+            Visibility = dto.Visibility ?? "private",
+            InviteCode = GenerateCode(),
+            OwnerId = userId
         };
 
-        _db.Chains.Add(chain);  // FIX 1: _db.Chain в†’ _db.Chains
-
+        _db.Chains.Add(chain);
         _db.UserSupplyChains.Add(new UserSupplyChain
         {
-            UserId        = userId,
+            UserId = userId,
             SupplyChainId = chain.Id,
-            Role          = "SuperAdmin"
+            Role = "SuperAdmin"
         });
 
         var user = await _db.Users.FindAsync(userId);
@@ -72,120 +71,116 @@ public class ChainsController : ControllerBase
     }
 
     [HttpPost("join")]
-public async Task<IActionResult> Join([FromBody] JoinChainDto dto)
-{
-    var userId = GetUserId();
-
-    // РђРєРѕ РёРјР°РјРµ token в†’ РЅР°РјРµСЂРё РїРѕРєР°РЅР°С‚Р°
-    if (!string.IsNullOrWhiteSpace(dto.Token))
+    public async Task<IActionResult> Join([FromBody] JoinChainDto dto)
     {
-        if (!Guid.TryParse(dto.Token, out var tokenGuid))
-            return BadRequest("Invalid token.");
-
-        var invite = await _db.ChainInvites
-            .Include(i => i.Chain)
-            .FirstOrDefaultAsync(i => i.Id == tokenGuid && !i.IsUsed);
-
-        if (invite == null || invite.ExpiresAt < DateTime.UtcNow)
-            return BadRequest("Invite expired or invalid.");
+        var userId = GetUserId();
+        var target = await ResolveJoinTarget(dto);
+        if (target.Result != null) return target.Result;
 
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
-        if (!string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { code = "InviteEmailMismatch", message = "Тази покана е за друг имейл адрес. Моля, влезте с правилния акаунт." });
 
-        return await JoinChain(userId, invite.ChainId, invite.Role, invite);
+        if (target.Invite != null && !string.Equals(target.Invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { code = "InviteEmailMismatch", message = "This invite is for another email address. Please sign in with the correct account." });
+
+        return await JoinChain(userId, target.ChainId, target.Role, target.Invite, dto.CurrentChainId);
     }
 
-    // РРЅР°С‡Рµ вЂ” СЃ РєРѕРґ
-    var code = dto.Code;
-    if (string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(dto.Link))
+    private async Task<IActionResult> JoinChain(int userId, Guid chainId, string role, ChainInvite? invite, Guid? currentChainHint)
     {
-        var parts = dto.Link.TrimEnd('/').Split('/');
-        code = parts.Last();
-    }
-    if (string.IsNullOrWhiteSpace(code)) return BadRequest("Code or link is required.");
+        var memberships = await _db.UserSupplyChains
+            .Include(u => u.SupplyChain)
+            .Where(u => u.UserId == userId)
+            .ToListAsync();
+        var existing = memberships.Any(u => u.SupplyChainId == chainId);
+        var hintedCurrentChainId = currentChainHint != chainId ? currentChainHint : null;
 
-    var chain = await _db.Chains
-        .FirstOrDefaultAsync(c => c.InviteCode == code.ToUpper());
-    if (chain == null) return NotFound("Invalid invite code.");
+        var user = await _db.Users.FindAsync(userId);
+        if (existing && memberships.All(u => u.SupplyChainId == chainId) && user?.SupplyChainId == chainId && hintedCurrentChainId == null)
+            return BadRequest("Already a member.");
 
-    return await JoinChain(userId, chain.Id, "Employee", null);
-}
+        var currentMembership = memberships.FirstOrDefault(u => u.SupplyChainId != chainId);
+        if (existing && currentMembership == null && hintedCurrentChainId == null)
+            return BadRequest("Already a member.");
 
-private async Task<IActionResult> JoinChain(int userId, Guid chainId, string role, ChainInvite? invite)
-{
-    var existing = await _db.UserSupplyChains
-        .AnyAsync(u => u.UserId == userId && u.SupplyChainId == chainId);
-    if (existing) return BadRequest("Already a member.");
-
-    var user = await _db.Users.FindAsync(userId);
-    if (user?.SupplyChainId == chainId) return BadRequest("Already a member.");
-
-    var currentMembership = await _db.UserSupplyChains
-        .Include(u => u.SupplyChain)
-        .FirstOrDefaultAsync(u => u.UserId == userId);
-    if (currentMembership != null || user?.SupplyChainId != null)
-    {
-        var targetChain = await _db.Chains.FindAsync(chainId);
-        var currentChain = currentMembership?.SupplyChain
-            ?? (user?.SupplyChainId == null ? null : await _db.Chains.FindAsync(user.SupplyChainId.Value));
-
-        return Conflict(new
+        if (currentMembership != null || (user?.SupplyChainId != null && user.SupplyChainId != chainId) || hintedCurrentChainId != null)
         {
-            code = "ChainTransferRequired",
-            message = "Вече сте в chain. Потвърдете, ако искате да се преместите.",
-            currentChainId = currentMembership?.SupplyChainId ?? user!.SupplyChainId,
-            currentChainName = currentChain?.Name,
-            targetChainId = chainId,
-            targetChainName = targetChain?.Name,
-            role
+            var targetChain = await _db.Chains.FindAsync(chainId);
+            return Conflict(await BuildTransferRequiredResponse(
+                userId,
+                currentMembership,
+                user,
+                hintedCurrentChainId,
+                chainId,
+                targetChain?.Name,
+                role));
+        }
+
+        _db.UserSupplyChains.Add(new UserSupplyChain
+        {
+            UserId = userId,
+            SupplyChainId = chainId,
+            Role = role
         });
+
+        if (user != null)
+        {
+            user.SupplyChainId = chainId;
+            user.Role = role;
+        }
+
+        if (invite != null) invite.IsUsed = true;
+
+        await _db.SaveChangesAsync();
+
+        var chain = await _db.Chains.FindAsync(chainId);
+        return Ok(new { chainId, chain?.Name, role });
     }
-
-    _db.UserSupplyChains.Add(new UserSupplyChain
-    {
-        UserId = userId, SupplyChainId = chainId, Role = role
-    });
-
-    if (user != null) { user.SupplyChainId = chainId; user.Role = role; }
-
-    if (invite != null) invite.IsUsed = true;
-
-    await _db.SaveChangesAsync();
-
-    var chain = await _db.Chains.FindAsync(chainId);
-    return Ok(new { chainId, chain?.Name, role });
-}
 
     [HttpPost("join/transfer-request")]
     public async Task<IActionResult> RequestTransfer([FromBody] JoinChainDto dto)
     {
         var userId = GetUserId();
-        if (string.IsNullOrWhiteSpace(dto.Token) || !Guid.TryParse(dto.Token, out var inviteId))
-            return BadRequest("Invalid token.");
-
-        var invite = await _db.ChainInvites
-            .Include(i => i.Chain)
-            .FirstOrDefaultAsync(i => i.Id == inviteId && !i.IsUsed);
-        if (invite == null || invite.ExpiresAt < DateTime.UtcNow)
-            return BadRequest("Invite expired or invalid.");
+        var target = await ResolveJoinTarget(dto);
+        if (target.Result != null) return target.Result;
 
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
-        if (!string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { code = "InviteEmailMismatch", message = "Тази покана е за друг имейл адрес. Моля, влезте с правилния акаунт." });
+        if (target.Invite != null && !string.Equals(target.Invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { code = "InviteEmailMismatch", message = "This invite is for another email address. Please sign in with the correct account." });
 
         var currentMembership = await _db.UserSupplyChains
             .Include(u => u.SupplyChain)
-            .FirstOrDefaultAsync(u => u.UserId == userId);
-        if (currentMembership == null && user.SupplyChainId == null)
-            return await JoinChain(userId, invite.ChainId, invite.Role, invite);
-        if (currentMembership?.SupplyChainId == invite.ChainId || user.SupplyChainId == invite.ChainId)
+            .FirstOrDefaultAsync(u => u.UserId == userId && u.SupplyChainId != target.ChainId);
+        var currentChainHint = dto.CurrentChainId == target.ChainId ? null : dto.CurrentChainId;
+        if (currentMembership == null && user.SupplyChainId == null && currentChainHint == null)
+            return await JoinChain(userId, target.ChainId, target.Role, target.Invite, dto.CurrentChainId);
+        if (currentMembership?.SupplyChainId == target.ChainId && user.SupplyChainId == target.ChainId)
             return BadRequest("Already a member.");
 
+        var currentChainId = currentMembership?.SupplyChainId ?? user.SupplyChainId ?? currentChainHint;
+        if (currentChainId != null && await IsLeavingSuperAdminAsync(userId, currentChainId.Value, currentMembership))
+        {
+            if (dto.NewSuperAdminUserId == null)
+                return BadRequest(new { code = "SuperAdminTransferRequired", message = "Choose an admin to become SuperAdmin before leaving this chain." });
+
+            var newSuperAdmin = await _db.UserSupplyChains
+                .FirstOrDefaultAsync(u =>
+                    u.UserId == dto.NewSuperAdminUserId.Value &&
+                    u.SupplyChainId == currentChainId.Value &&
+                    u.Role == "Admin");
+            if (newSuperAdmin == null)
+                return BadRequest(new { code = "InvalidSuperAdminCandidate", message = "The selected user must be an admin in your current chain." });
+        }
+
         var baseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
-        var transferToken = CreateTransferToken(invite.Id, userId, DateTime.UtcNow.AddHours(2));
+        var transferToken = CreateTransferToken(
+            target.Invite?.Id,
+            target.ChainId,
+            target.Role,
+            userId,
+            dto.NewSuperAdminUserId,
+            DateTime.UtcNow.AddHours(2));
         var confirmationLink = $"{baseUrl.TrimEnd('/')}/join?transferToken={Uri.EscapeDataString(transferToken)}";
         var currentChain = currentMembership?.SupplyChain
             ?? (user.SupplyChainId == null ? null : await _db.Chains.FindAsync(user.SupplyChainId.Value));
@@ -193,8 +188,8 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         await _email.SendChainTransferConfirmationEmailAsync(
             user.Email,
             user.FullName,
-            currentChain?.Name ?? "текущия chain",
-            invite.Chain?.Name ?? "новия chain",
+            currentChain?.Name ?? "current chain",
+            target.ChainName ?? "new chain",
             confirmationLink);
 
         return Ok(new { message = "Confirmation email sent." });
@@ -208,54 +203,159 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         if (parsed == null || parsed.Value.UserId != userId)
             return BadRequest("Invalid or expired transfer confirmation.");
 
-        var invite = await _db.ChainInvites
-            .Include(i => i.Chain)
-            .FirstOrDefaultAsync(i => i.Id == parsed.Value.InviteId && !i.IsUsed);
-        if (invite == null || invite.ExpiresAt < DateTime.UtcNow)
-            return BadRequest("Invite expired or invalid.");
+        ChainInvite? invite = null;
+        if (parsed.Value.InviteId != null)
+        {
+            invite = await _db.ChainInvites
+                .Include(i => i.Chain)
+                .FirstOrDefaultAsync(i => i.Id == parsed.Value.InviteId.Value && !i.IsUsed);
+            if (invite == null || invite.ExpiresAt < DateTime.UtcNow)
+                return BadRequest("Invite expired or invalid.");
+        }
 
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
-        if (!string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { code = "InviteEmailMismatch", message = "Тази покана е за друг имейл адрес. Моля, влезте с правилния акаунт." });
+        if (invite != null && !string.Equals(invite.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { code = "InviteEmailMismatch", message = "This invite is for another email address. Please sign in with the correct account." });
 
         var memberships = await _db.UserSupplyChains
             .Where(u => u.UserId == userId)
             .ToListAsync();
 
-        if (memberships.Any(u => u.SupplyChainId == invite.ChainId))
-            return BadRequest("Already a member.");
+        foreach (var membership in memberships.Where(u => u.SupplyChainId != parsed.Value.TargetChainId))
+        {
+            if (!await IsLeavingSuperAdminAsync(userId, membership.SupplyChainId, membership))
+                continue;
+
+            if (parsed.Value.NewSuperAdminUserId == null)
+                return BadRequest("SuperAdmin transfer is required.");
+
+            var newSuperAdmin = await _db.UserSupplyChains
+                .FirstOrDefaultAsync(u =>
+                    u.UserId == parsed.Value.NewSuperAdminUserId.Value &&
+                    u.SupplyChainId == membership.SupplyChainId &&
+                    u.Role == "Admin");
+            if (newSuperAdmin == null)
+                return BadRequest("The selected user must be an admin in your current chain.");
+
+            newSuperAdmin.Role = "SuperAdmin";
+            var oldChain = await _db.Chains.FindAsync(membership.SupplyChainId);
+            if (oldChain?.OwnerId == userId)
+                oldChain.OwnerId = newSuperAdmin.UserId;
+
+            var promotedUser = await _db.Users.FindAsync(newSuperAdmin.UserId);
+            if (promotedUser?.SupplyChainId == membership.SupplyChainId)
+                promotedUser.Role = "SuperAdmin";
+        }
 
         _db.UserSupplyChains.RemoveRange(memberships);
         _db.UserSupplyChains.Add(new UserSupplyChain
         {
             UserId = userId,
-            SupplyChainId = invite.ChainId,
-            Role = invite.Role
+            SupplyChainId = parsed.Value.TargetChainId,
+            Role = parsed.Value.Role
         });
 
-        user.SupplyChainId = invite.ChainId;
-        user.Role = invite.Role;
-        invite.IsUsed = true;
+        user.SupplyChainId = parsed.Value.TargetChainId;
+        user.Role = parsed.Value.Role;
+        if (invite != null) invite.IsUsed = true;
 
         await _db.SaveChangesAsync();
 
-        return Ok(new { chainId = invite.ChainId, invite.Chain?.Name, role = invite.Role });
+        var chain = invite?.Chain ?? await _db.Chains.FindAsync(parsed.Value.TargetChainId);
+        return Ok(new { chainId = parsed.Value.TargetChainId, chain?.Name, role = parsed.Value.Role });
     }
-
 
     [HttpGet("invite-link")]
     public async Task<IActionResult> GetInviteLink()
     {
         var userId = GetUserId();
         var membership = await _db.UserSupplyChains
-            .Include(u => u.SupplyChain)  // FIX 3: .Include(u => u.Chain) в†’ .Include(u => u.SupplyChain)
+            .Include(u => u.SupplyChain)
             .FirstOrDefaultAsync(u => u.UserId == userId);
 
         if (membership == null) return NotFound();
 
-        var link = $"https://flowsupply.com/join/{membership.SupplyChain!.InviteCode}";
+        var baseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
+        var link = $"{baseUrl.TrimEnd('/')}/join?code={Uri.EscapeDataString(membership.SupplyChain!.InviteCode)}";
         return Ok(new { link, code = membership.SupplyChain.InviteCode });
+    }
+
+    private async Task<object> BuildTransferRequiredResponse(
+        int userId,
+        UserSupplyChain? currentMembership,
+        User? user,
+        Guid? currentChainHint,
+        Guid targetChainId,
+        string? targetChainName,
+        string role)
+    {
+        var currentChainId = currentMembership?.SupplyChainId ?? user?.SupplyChainId ?? currentChainHint!.Value;
+        var currentChain = currentMembership?.SupplyChain ?? await _db.Chains.FindAsync(currentChainId);
+        var requiresSuperAdminTransfer = await IsLeavingSuperAdminAsync(userId, currentChainId, currentMembership);
+        var adminCandidates = await _db.UserSupplyChains
+            .Include(u => u.User)
+            .Where(u => requiresSuperAdminTransfer &&
+                u.SupplyChainId == currentChainId &&
+                u.UserId != userId &&
+                u.Role == "Admin")
+            .Select(u => new { userId = u.UserId, fullName = u.User!.FullName, email = u.User.Email })
+            .ToListAsync();
+
+        return new
+        {
+            code = "ChainTransferRequired",
+            message = "You are already in a chain. Confirm if you want to move to the new chain.",
+            currentChainId,
+            currentChainName = currentChain?.Name,
+            targetChainId,
+            targetChainName,
+            role,
+            requiresSuperAdminTransfer,
+            adminCandidates
+        };
+    }
+
+    private async Task<bool> IsLeavingSuperAdminAsync(int userId, Guid chainId, UserSupplyChain? membership)
+    {
+        var chain = await _db.Chains.FindAsync(chainId);
+        var role = membership?.Role
+            ?? (await _db.UserSupplyChains.FirstOrDefaultAsync(u => u.UserId == userId && u.SupplyChainId == chainId))?.Role;
+
+        return chain?.OwnerId == userId || role == "SuperAdmin";
+    }
+
+    private async Task<(IActionResult? Result, Guid ChainId, string? ChainName, string Role, ChainInvite? Invite)> ResolveJoinTarget(JoinChainDto dto)
+    {
+        if (!string.IsNullOrWhiteSpace(dto.Token))
+        {
+            if (!Guid.TryParse(dto.Token, out var inviteId))
+                return (BadRequest("Invalid token."), Guid.Empty, null, "Employee", null);
+
+            var invite = await _db.ChainInvites
+                .Include(i => i.Chain)
+                .FirstOrDefaultAsync(i => i.Id == inviteId && !i.IsUsed);
+            if (invite == null || invite.ExpiresAt < DateTime.UtcNow)
+                return (BadRequest("Invite expired or invalid."), Guid.Empty, null, "Employee", null);
+
+            return (null, invite.ChainId, invite.Chain?.Name, invite.Role, invite);
+        }
+
+        var code = dto.Code;
+        if (string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(dto.Link))
+        {
+            var parts = dto.Link.TrimEnd('/').Split('/');
+            code = parts.Last();
+        }
+
+        if (string.IsNullOrWhiteSpace(code))
+            return (BadRequest("Code or link is required."), Guid.Empty, null, "Employee", null);
+
+        var chain = await _db.Chains.FirstOrDefaultAsync(c => c.InviteCode == code.ToUpper());
+        if (chain == null)
+            return (NotFound("Invalid invite code."), Guid.Empty, null, "Employee", null);
+
+        return (null, chain.Id, chain.Name, "Employee", null);
     }
 
     private static string GenerateCode()
@@ -267,14 +367,16 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         return $"{part()}-{part()}-{part()}";
     }
 
-    private string CreateTransferToken(Guid inviteId, int userId, DateTime expiresAt)
+    private string CreateTransferToken(Guid? inviteId, Guid targetChainId, string role, int userId, int? newSuperAdminUserId, DateTime expiresAt)
     {
         var expiresTicks = expiresAt.ToUniversalTime().Ticks;
-        var payload = $"{inviteId:N}.{userId}.{expiresTicks}";
+        var invitePart = inviteId?.ToString("N") ?? "-";
+        var newSuperAdminPart = newSuperAdminUserId?.ToString() ?? "-";
+        var payload = $"{invitePart}.{targetChainId:N}.{Base64UrlEncode(role)}.{userId}.{newSuperAdminPart}.{expiresTicks}";
         return $"{Base64UrlEncode(payload)}.{Sign(payload)}";
     }
 
-    private (Guid InviteId, int UserId)? ValidateTransferToken(string? token)
+    private (Guid? InviteId, Guid TargetChainId, string Role, int UserId, int? NewSuperAdminUserId)? ValidateTransferToken(string? token)
     {
         if (string.IsNullOrWhiteSpace(token)) return null;
 
@@ -293,18 +395,29 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
         }
 
         var values = payload.Split('.');
-        if (values.Length != 3 ||
-            !Guid.TryParseExact(values[0], "N", out var inviteId) ||
-            !int.TryParse(values[1], out var tokenUserId) ||
-            !long.TryParse(values[2], out var expiresTicks))
+        if (values.Length != 6 ||
+            !Guid.TryParseExact(values[1], "N", out var targetChainId) ||
+            !int.TryParse(values[3], out var tokenUserId) ||
+            !long.TryParse(values[5], out var expiresTicks))
         {
             return null;
         }
 
+        if (values[0] != "-" && !Guid.TryParseExact(values[0], "N", out _))
+            return null;
+
+        if (values[4] != "-" && !int.TryParse(values[4], out _))
+            return null;
+
         if (new DateTime(expiresTicks, DateTimeKind.Utc) < DateTime.UtcNow)
             return null;
 
-        return (inviteId, tokenUserId);
+        var role = Base64UrlDecode(values[2]);
+        if (string.IsNullOrWhiteSpace(role)) return null;
+
+        var inviteId = values[0] == "-" ? (Guid?)null : Guid.ParseExact(values[0], "N");
+        var newSuperAdminUserId = values[4] == "-" ? (int?)null : int.Parse(values[4]);
+        return (inviteId, targetChainId, role, tokenUserId, newSuperAdminUserId);
     }
 
     private string Sign(string value)
@@ -339,5 +452,5 @@ private async Task<IActionResult> JoinChain(int userId, Guid chainId, string rol
 }
 
 public record CreateChainDto(string Name, string? Industry, string? Description, string? Visibility);
-public record JoinChainDto(string? Code, string? Link, string? Token);
+public record JoinChainDto(string? Code, string? Link, string? Token, int? NewSuperAdminUserId, Guid? CurrentChainId);
 public record ConfirmTransferDto(string? TransferToken);
