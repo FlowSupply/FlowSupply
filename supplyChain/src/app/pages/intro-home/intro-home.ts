@@ -38,8 +38,8 @@ export class IntroHome {
   }
 
   private saveAndNavigate(response: any, role: string) {
-    localStorage.setItem('supplyChainId', response.id);
-    localStorage.setItem('supplyChainName', response.name);
+    localStorage.setItem('supplyChainId', response.chainId ?? response.id);
+    localStorage.setItem('supplyChainName', response.name ?? '');
     localStorage.setItem('role', role);
     this.router.navigate(['/dashboard']);
   }
@@ -62,13 +62,32 @@ export class IntroHome {
     const value = this.joinTab === 'code' ? this.joinForm.code : this.joinForm.link;
     if (!value.trim()) { alert(`${this.joinTab === 'code' ? 'Code' : 'Link'} is required`); return; }
 
+    const currentChainId = localStorage.getItem('supplyChainId');
+    if (currentChainId && currentChainId.trim()) {
+      this.router.navigate(['/join'], { queryParams: payload });
+      return;
+    }
+
     this.http.post<any>(apiUrl('chains/join'), payload, { headers: this.getHeaders() })
       .subscribe({
         next: (res) => this.saveAndNavigate(res, res.role),
         error: (err) => {
+          if (err.status === 409 && err.error?.code === 'ChainTransferRequired') {
+            this.router.navigate(['/join'], { queryParams: payload });
+            return;
+          }
+
           console.error(err);
-          alert(err.error || 'Invalid code or link.');
+          alert(this.getErrorMessage(err, 'Invalid code or link.'));
         }
       });
+  }
+
+  private getErrorMessage(err: any, fallback: string): string {
+    if (typeof err?.error === 'string') return err.error;
+    if (typeof err?.error?.message === 'string') return err.error.message;
+    if (typeof err?.error?.title === 'string') return err.error.title;
+    if (typeof err?.message === 'string') return err.message;
+    return fallback;
   }
 }

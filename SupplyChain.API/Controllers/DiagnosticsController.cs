@@ -39,10 +39,11 @@ public class DiagnosticsController : ControllerBase
 
         try
         {
+            var frontendBaseUrl = _configuration["Frontend:BaseUrl"] ?? "http://localhost:4200";
             await _emailService.SendEmailVerificationAsync(
                 request.Email.Trim(),
                 "FlowSupply Test",
-                "https://flowsupply.onrender.com/verify-email?token=test");
+                $"{frontendBaseUrl.TrimEnd('/')}/verify-email?token=test");
 
             return Ok(new { message = "Test email sent." });
         }

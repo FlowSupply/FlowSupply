@@ -229,6 +229,31 @@ public async Task<IActionResult> ChangeRole(int userId, [FromBody] string role)
     }
 
     // DELETE api/members/{userId} — премахване на член
+    [HttpDelete("invites/{inviteId:guid}")]
+    public async Task<IActionResult> CancelInvite(Guid inviteId)
+    {
+        var chainId = await GetChainId();
+        if (chainId == null) return BadRequest();
+
+        var requesterId = GetUserId();
+        var requesterRole = (await _db.UserSupplyChains
+            .FirstOrDefaultAsync(u => u.UserId == requesterId && u.SupplyChainId == chainId))?.Role;
+
+        if (requesterRole != "Admin" && requesterRole != "SuperAdmin")
+        {
+            return Forbid();
+        }
+
+        var invite = await _db.ChainInvites
+            .FirstOrDefaultAsync(i => i.Id == inviteId && i.ChainId == chainId && !i.IsUsed);
+        if (invite == null) return NotFound();
+
+        _db.ChainInvites.Remove(invite);
+        await _db.SaveChangesAsync();
+
+        return Ok();
+    }
+
     [HttpDelete("{userId}")]
     public async Task<IActionResult> Remove(int userId)
     {

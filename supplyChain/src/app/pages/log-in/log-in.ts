@@ -22,6 +22,8 @@ export class LogIn implements OnInit {
 
   inviteToken  = '';
   transferToken = '';
+  inviteCode = '';
+  inviteLink = '';
   emailLocked  = false;
 
   constructor(
@@ -35,6 +37,8 @@ export class LogIn implements OnInit {
   ngOnInit() {
     this.inviteToken = this.route.snapshot.queryParamMap.get('token') || '';
     this.transferToken = this.route.snapshot.queryParamMap.get('transferToken') || '';
+    this.inviteCode = this.route.snapshot.queryParamMap.get('code') || '';
+    this.inviteLink = this.route.snapshot.queryParamMap.get('link') || '';
     const emailParam = this.route.snapshot.queryParamMap.get('email') || '';
     if (emailParam) {
       this.email       = decodeURIComponent(emailParam);
@@ -69,6 +73,14 @@ export class LogIn implements OnInit {
         } else if (this.inviteToken) {
           this.router.navigate(['/join'], {
             queryParams: { token: this.inviteToken }
+          });
+        } else if (this.inviteCode) {
+          this.router.navigate(['/join'], {
+            queryParams: { code: this.inviteCode }
+          });
+        } else if (this.inviteLink) {
+          this.router.navigate(['/join'], {
+            queryParams: { link: this.inviteLink }
           });
         } else if (!response.supplyChainId) {
           localStorage.removeItem('supplyChainId');

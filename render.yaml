@@ -7,6 +7,8 @@ services:
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
+      - key: Frontend__BaseUrl
+        value: https://flowsupply.onrender.com
 
   - type: static
     name: flowsupply

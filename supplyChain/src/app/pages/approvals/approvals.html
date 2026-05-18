@@ -13,8 +13,6 @@
 
   <div class="approval-list">
     <div class="approval-card" *ngFor="let item of approvals">
-
-      <!-- LEFT -->
       <div class="approval-left">
         <span class="badge priority-{{ item.priority | lowercase }}">{{ item.priority }}</span>
 
@@ -33,25 +31,71 @@
         </div>
       </div>
 
-      <!-- MIDDLE (AI placeholder — ще се попълва от n8n) -->
-      <div class="approval-middle">
+      <div class="approval-middle" *ngIf="getAiAnalysis(item.requestId) as aiAnalysis; else pendingAiPanel">
         <div class="ai-header">
           <span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>
             AI Analysis
           </span>
-          <span class="confidence ai-pending">Awaiting AI...</span>
+          <span
+            class="confidence"
+            [ngClass]="{
+              'high': aiAnalysis.confidence === 'high',
+              'medium': aiAnalysis.confidence === 'medium',
+              'low': aiAnalysis.confidence === 'low'
+            }"
+          >
+            {{ aiAnalysis.confidence | titlecase }} confidence
+          </span>
         </div>
-        <p class="muted" style="font-size:13px;">
-          AI analysis via n8n will appear here once connected.
-        </p>
+
+        <p class="muted ai-summary">{{ aiAnalysis.summary }}</p>
+
+        <div class="ai-tags">
+          <span class="ai-tag recommendation-{{ aiAnalysis.recommendation }}">
+            {{ aiAnalysis.recommendation | titlecase }}
+          </span>
+          <span class="ai-tag risk-{{ aiAnalysis.riskLevel }}">
+            {{ aiAnalysis.riskLevel | titlecase }} risk
+          </span>
+        </div>
+
         <div class="supplier">
-          <span>Suggested supplier: <b>—</b></span>
-          <span>Estimated price: <b>—</b></span>
+          <span>Suggested supplier: <b>{{ aiAnalysis.suggestedSupplier }}</b></span>
+          <span>
+            Estimated price:
+            <b>
+              <ng-container *ngIf="aiAnalysis.estimatedPrice !== null; else missingPrice">
+                {{ aiAnalysis.estimatedPrice | number:'1.2-2' }}
+                {{ aiAnalysis.currency }}
+              </ng-container>
+              <ng-template #missingPrice>TBD</ng-template>
+            </b>
+          </span>
         </div>
+
+        <p class="muted ai-reason">{{ aiAnalysis.reason }}</p>
       </div>
 
-      <!-- RIGHT -->
+      <ng-template #pendingAiPanel>
+        <div class="approval-middle">
+          <div class="ai-header">
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>
+              AI Analysis
+            </span>
+            <span class="confidence ai-pending">
+              {{ getAiStatus(item.requestId) === 'error' ? 'AI unavailable' : 'Awaiting AI...' }}
+            </span>
+          </div>
+          <p class="muted ai-summary">{{ getAiMessage(item.requestId) }}</p>
+          <div class="supplier">
+            <span>Suggested supplier: <b>-</b></span>
+            <span>Estimated price: <b>-</b></span>
+          </div>
+        </div>
+      </ng-template>
+
       <div class="approval-actions">
         <button class="approve" (click)="approve(item)">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
@@ -63,7 +107,6 @@
         </button>
         <p class="note">Action will be recorded in the system</p>
       </div>
-
     </div>
   </div>
 </div>
