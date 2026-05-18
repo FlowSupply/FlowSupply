@@ -124,6 +124,49 @@
     font-size: 14px;
 }
 
+.ai-summary {
+    font-size: 13px;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.ai-reason {
+    margin: 12px 0 0;
+    line-height: 1.45;
+}
+
+.ai-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.ai-tag {
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+}
+
+.recommendation-approve,
+.risk-low {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.recommendation-review,
+.risk-medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.recommendation-reject,
+.risk-high {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 .approval-actions {
     width: 30%;
     display: flex;

@@ -263,13 +263,70 @@ canChangeRole(member: Member): boolean {
 
 
   removeMember(member: Member) {
-    if (this.isPendingStatus(member.status)) return;
+    if (this.isPendingStatus(member.status)) {
+      this.cancelInvite(member);
+      return;
+    }
+
     if (!confirm(`Remove ${member.fullName} from the chain?`)) return;
     this.http.delete(apiUrl(`members/${member.id}`), { headers: this.getHeaders() })
       .subscribe({
-        next: () => { this.members = this.members.filter(m => m.id !== member.id); this.cdr.detectChanges(); },
+        next: () => {
+          this.removeMemberFromTable(member);
+          this.cdr.detectChanges();
+        },
         error: (err) => console.error('Error removing member:', err)
       });
+  }
+
+  canRemoveMember(member: Member): boolean {
+    if (member.isOwner || member.id === this.currentUserIdValue.toString()) return false;
+    if (this.isPendingStatus(member.status)) return this.canCancelInvite(member);
+    return this.currentUserRole === 'Admin' || this.currentUserRole === 'SuperAdmin';
+  }
+
+  private canCancelInvite(member: Member): boolean {
+    return this.isPendingStatus(member.status)
+      && this.isRealInviteId(member.id)
+      && (this.currentUserRole === 'Admin' || this.currentUserRole === 'SuperAdmin');
+  }
+
+  private cancelInvite(member: Member) {
+    if (!this.canCancelInvite(member)) return;
+    if (!confirm(`Cancel invitation to ${member.email}?`)) return;
+
+    this.http.delete(apiUrl(`members/invites/${member.id}`), { headers: this.getHeaders() })
+      .subscribe({
+        next: () => {
+          this.removeMemberFromTable(member);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          if (err.status === 404) {
+            this.removeMemberFromTable(member);
+            this.cdr.detectChanges();
+            return;
+          }
+
+          console.error('Error cancelling invite:', err);
+        }
+      });
+  }
+
+  private removeMemberFromTable(member: Member) {
+    const email = member.email.toLowerCase();
+
+    this.localPendingInvites = this.localPendingInvites.filter(m =>
+      m.id !== member.id && m.email.toLowerCase() !== email
+    );
+
+    this.members = this.members.filter(m =>
+      m.id !== member.id && m.email.toLowerCase() !== email
+    );
+  }
+
+  private isRealInviteId(id: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   }
 
   copyToClipboard(text: string) {
